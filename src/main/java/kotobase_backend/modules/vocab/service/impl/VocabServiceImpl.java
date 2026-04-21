@@ -21,7 +21,7 @@ public class VocabServiceImpl implements VocabService {
     public Page<VocabResponse> getAllVocabs(VocabRequest request) {
         try {
             int limit = request.getLimit();
-            int page = request.getPage() - 1;
+            int page = request.getPage() - 1 ;
             Pageable pageable = PageRequest.of(page, limit);
             Page<vocab> pageVocab = vocabRepository.findByKanjiContaining(request.getSearch(), pageable);
             return  pageVocab.map(vocabMapper::mapToVocab);

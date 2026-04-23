@@ -13,7 +13,7 @@ import java.util.List;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class kanji {
+public class Kanji {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;

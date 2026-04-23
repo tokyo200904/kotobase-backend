@@ -22,5 +22,5 @@ public class KanjiReading {
     @ManyToOne
     @JsonIgnore
     @JoinColumn(name = "kanji_id")
-    private kanji kanji;
+    private Kanji kanji;
 }

@@ -15,6 +15,11 @@ public class JlptLevel {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
+
+    @Column(name = "level")
     private Level level;
+
+    @Column(name = "is_premium", nullable = false)
+    private Boolean isPremium;
 }
 

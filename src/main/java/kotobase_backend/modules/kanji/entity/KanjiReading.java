@@ -2,6 +2,7 @@ package kotobase_backend.modules.kanji.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
+import kotobase_backend.comom.enums.KanjiType;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -16,8 +17,14 @@ public class KanjiReading {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
+    @Column(name = "reading")
     private String reading;
+
+    @Column(name = "reading_type")
     private String readingType;
+
+    @Column(name = "reading_type")
+    private KanjiType kanjiType;
 
     @ManyToOne
     @JsonIgnore

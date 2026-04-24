@@ -3,6 +3,7 @@ package kotobase_backend.comom.exceptions;
 import jakarta.servlet.http.HttpServletRequest;
 import kotobase_backend.comom.exceptions.CustomException.ResourceNotFoundException;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
@@ -23,5 +24,26 @@ public class GlobalExceptionHandler {
         );
 
         return ResponseEntity.status(404).body(error);
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<ErrorResponse> handleValidation(MethodArgumentNotValidException ex, HttpServletRequest request) {
+
+        String message = ex.getBindingResult()
+                .getFieldErrors()
+                .stream()
+                .findFirst()
+                .map(e -> e.getDefaultMessage())
+                .orElse("Invalid input");
+
+        ErrorResponse error = new ErrorResponse(
+                400,
+                message,
+                request.getRequestURI(),
+                LocalDateTime.now(),
+                "VALIDATION_ERROR"
+        );
+
+        return ResponseEntity.badRequest().body(error);
     }
 }

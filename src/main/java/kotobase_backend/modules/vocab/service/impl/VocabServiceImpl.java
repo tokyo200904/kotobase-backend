@@ -20,16 +20,17 @@ public class VocabServiceImpl implements VocabService {
     private final VocabMapper vocabMapper;
     @Override
     public Page<VocabResponse> getAllVocabs(VocabRequest request) {
-        try {
+        if (request.getLimit() <= 0) {
+            throw new IllegalArgumentException("limit phải lớn hơn 0");
+        }
+        if (request.getPage() <= 0) {
+            throw new IllegalArgumentException("Page phải lớn hơn không 0");
+        }
             int limit = request.getLimit();
             int page = request.getPage() - 1 ;
             Pageable pageable = PageRequest.of(page, limit);
             Page<Vocab> pageVocab = vocabRepository.findByKanjiContaining(request.getSearch(), pageable);
-            return  pageVocab.map(vocabMapper::mapToVocab);
-        }
-        catch (Exception e) {
-            throw new RuntimeException("Lỗi khi lấy danh sách từ vựng", e);
-        }
+        return  pageVocab.map(vocabMapper::mapToVocab);
     }
 
     @Override

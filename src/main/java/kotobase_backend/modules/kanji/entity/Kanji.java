@@ -27,7 +27,7 @@ public class Kanji {
     @Column(name = "stroke_count")
     private Integer strokeCount;
 
-    @Column(name = "is_premium")
+    @Column(name = "is_premium", nullable = false)
     private Boolean isPremium;
 
     @ManyToOne

@@ -1,6 +1,7 @@
 package kotobase_backend.modules.kanji;
 
 import kotobase_backend.comom.enums.Level;
+import kotobase_backend.modules.kanji.dto.Response.KanjiDetelResponse;
 import kotobase_backend.modules.kanji.dto.Response.KanjisResponse;
 import kotobase_backend.modules.kanji.service.KanjiService;
 import lombok.RequiredArgsConstructor;
@@ -19,6 +20,11 @@ public class KanjiController {
     @GetMapping
     public ResponseEntity<List<KanjisResponse>> getKanjiLvel(@RequestParam Level level) {
         return ResponseEntity.ok(kanjiService.getKanji(level));
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<KanjiDetelResponse> getDetelKanji(@PathVariable Integer id) {
+        return ResponseEntity.ok(kanjiService.getKanjiDetel(id));
     }
 
 }

@@ -20,11 +20,12 @@ public class KanjiReading {
     @Column(name = "reading")
     private String reading;
 
-    @Column(name = "reading_type")
-    private String readingType;
-
+    @Enumerated(EnumType.STRING)
     @Column(name = "reading_type")
     private KanjiType kanjiType;
+
+    @Column(name = "romaji")
+    private String romaji;
 
     @ManyToOne
     @JsonIgnore

@@ -16,6 +16,7 @@ public class JlptLevel {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "level")
     private Level level;
 

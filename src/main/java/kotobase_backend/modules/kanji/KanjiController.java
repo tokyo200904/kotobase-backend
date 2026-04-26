@@ -2,6 +2,7 @@ package kotobase_backend.modules.kanji;
 
 import kotobase_backend.comom.enums.Level;
 import kotobase_backend.modules.kanji.dto.Response.KanjiDetelResponse;
+import kotobase_backend.modules.kanji.dto.Response.KanjiFindResponse;
 import kotobase_backend.modules.kanji.dto.Response.KanjisResponse;
 import kotobase_backend.modules.kanji.service.KanjiService;
 import lombok.RequiredArgsConstructor;
@@ -10,7 +11,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@CrossOrigin(origins = "http://localhost:3000")
+@CrossOrigin(origins = "http://localhost:5173")
 @RestController
 @RequestMapping("/api/v1/kanji")
 @RequiredArgsConstructor
@@ -25,6 +26,11 @@ public class KanjiController {
     @GetMapping("/{id}")
     public ResponseEntity<KanjiDetelResponse> getDetelKanji(@PathVariable Integer id) {
         return ResponseEntity.ok(kanjiService.getKanjiDetel(id));
+    }
+
+    @GetMapping("/search")
+    public ResponseEntity<List<KanjiFindResponse>> findKanjis(@RequestParam String keyword) {
+        return ResponseEntity.ok(kanjiService.findKanji(keyword));
     }
 
 }

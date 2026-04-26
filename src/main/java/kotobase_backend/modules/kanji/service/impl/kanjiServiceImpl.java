@@ -4,6 +4,7 @@ import kotobase_backend.comom.enums.KanjiType;
 import kotobase_backend.comom.enums.Level;
 import kotobase_backend.comom.exceptions.CustomException.ResourceNotFoundException;
 import kotobase_backend.modules.kanji.dto.Response.KanjiDetelResponse;
+import kotobase_backend.modules.kanji.dto.Response.KanjiFindResponse;
 import kotobase_backend.modules.kanji.dto.Response.KanjiReadingResponse;
 import kotobase_backend.modules.kanji.dto.Response.KanjisResponse;
 import kotobase_backend.modules.kanji.entity.Kanji;
@@ -51,6 +52,17 @@ public class kanjiServiceImpl implements KanjiService {
                 .toList();
 
         return kanjiMapper.toDetelResponse(kanji, onKanji, kunKanji);
+    }
+
+    @Override
+    public List<KanjiFindResponse> findKanji(String key) {
+        List<Kanji> kanji = kanjiRepository.findKanji(key);
+        if (kanji.isEmpty()){
+            return Collections.emptyList();
+        }
+        return kanji.stream()
+                .map(kanjiMapper::toFindResponse)
+                .toList();
     }
 
 

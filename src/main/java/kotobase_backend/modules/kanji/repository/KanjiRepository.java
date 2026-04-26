@@ -18,4 +18,10 @@ public interface KanjiRepository extends JpaRepository<Kanji, Integer> {
 
     @Query("SELECT k FROM Kanji k JOIN FETCH k.readings where k.id = :id")
     Optional<Kanji> getKanjiByID(@Param("id") Integer id);
+
+    @Query("Select k FROM Kanji k LEFT JOIN FETCH k.readings kr " +
+            "where k.characters like %:key% " +
+            "or k.meaning like %:key% " +
+            "or k.han like %:key% ")
+    public List<Kanji> findKanji(@Param("key")  String key);
 }

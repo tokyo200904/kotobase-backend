@@ -30,6 +30,9 @@ public class Kanji {
     @Column(name = "is_premium", nullable = false)
     private Boolean isPremium;
 
+    @Column(name = "han")
+    private String han;
+
     @ManyToOne
     @JoinColumn(name = "level_id")
     private JlptLevel level;

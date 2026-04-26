@@ -1,6 +1,7 @@
 package kotobase_backend.modules.kanji.mapper;
 
 import kotobase_backend.modules.kanji.dto.Response.KanjiDetelResponse;
+import kotobase_backend.modules.kanji.dto.Response.KanjiFindResponse;
 import kotobase_backend.modules.kanji.dto.Response.KanjiReadingResponse;
 import kotobase_backend.modules.kanji.dto.Response.KanjisResponse;
 import kotobase_backend.modules.kanji.entity.Kanji;
@@ -25,6 +26,18 @@ public class KanjiMapper {
         kanjiDetelResponse.setStrokeCount(kanji.getStrokeCount());
         kanjiDetelResponse.setOn(onKanjiReadings);
         kanjiDetelResponse.setKun(kunKanjiReadings);
+        kanjiDetelResponse.setLevel(kanji.getLevel().getLevel());
+        kanjiDetelResponse.setHan(kanji.getHan());
         return kanjiDetelResponse;
+    }
+
+
+    public KanjiFindResponse toFindResponse(Kanji kanji) {
+        KanjiFindResponse kanjiFindResponse = new KanjiFindResponse();
+        kanjiFindResponse.setId(kanji.getId());
+        kanjiFindResponse.setCharacters(kanji.getCharacters());
+        kanjiFindResponse.setMeaning(kanji.getMeaning());
+        kanjiFindResponse.setHan(kanji.getHan());
+        return kanjiFindResponse;
     }
 }

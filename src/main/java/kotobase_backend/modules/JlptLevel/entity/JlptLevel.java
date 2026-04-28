@@ -2,9 +2,12 @@ package kotobase_backend.modules.JlptLevel.entity;
 
 import jakarta.persistence.*;
 import kotobase_backend.comom.enums.Level;
+import kotobase_backend.modules.lesson.entity.Lesson;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import java.util.List;
 
 @Entity
 @Table(name = "jlpt_levels")
@@ -22,5 +25,8 @@ public class JlptLevel {
 
     @Column(name = "is_premium", nullable = false)
     private Boolean isPremium;
+
+    @OneToMany(mappedBy = "level")
+    private List<Lesson> lessons;
 }
 

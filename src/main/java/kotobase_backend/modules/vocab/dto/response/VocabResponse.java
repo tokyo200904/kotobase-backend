@@ -1,13 +1,16 @@
 package kotobase_backend.modules.vocab.dto.response;
 
+import kotobase_backend.modules.example.dto.response.ExampleResponse;
 import lombok.Data;
+
+import java.util.List;
 
 @Data
 public class VocabResponse {
-    private long id;
-    private String kanji;
+    private Integer id;
+    private String word;
     private String reading;
     private String meaning;
-    private String example;
-
+    private String romaji;
+    private List<ExampleResponse> examples;
 }

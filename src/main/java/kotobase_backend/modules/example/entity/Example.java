@@ -1,6 +1,7 @@
 package kotobase_backend.modules.example.entity;
 
 import jakarta.persistence.*;
+import kotobase_backend.comom.enums.TargetType;
 import kotobase_backend.modules.audio.entity.Audio;
 import kotobase_backend.modules.vocab.entity.Vocab;
 import lombok.AllArgsConstructor;
@@ -17,8 +18,9 @@ public class Example {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "target_type", nullable = false)
-    private String targetType;
+    private TargetType targetType;
 
     @Column(name = "content", nullable = false)
     private String content;
@@ -34,7 +36,7 @@ public class Example {
     private Audio audio;
 
     @ManyToOne
-    @JoinColumn(name = "targetId", insertable = false, updatable = false)
+    @JoinColumn(name = "target_Id", insertable = false, updatable = false)
     private Vocab vocabulary;
 
 }

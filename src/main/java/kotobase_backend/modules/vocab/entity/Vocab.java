@@ -51,5 +51,4 @@ public class Vocab {
     @OneToMany(mappedBy = "vocabulary")
     private List<Example> examples;
 
-
 }

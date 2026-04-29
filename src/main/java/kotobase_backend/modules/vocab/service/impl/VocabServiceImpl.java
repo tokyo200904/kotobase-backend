@@ -2,6 +2,7 @@ package kotobase_backend.modules.vocab.service.impl;
 
 import kotobase_backend.comom.exceptions.CustomException.ResourceNotFoundException;
 import kotobase_backend.modules.vocab.dto.request.VocabRequest;
+import kotobase_backend.modules.vocab.dto.response.PageVocabResponse;
 import kotobase_backend.modules.vocab.dto.response.VocabResponse;
 import kotobase_backend.modules.vocab.entity.Vocab;
 import kotobase_backend.modules.vocab.mapper.VocabMapper;
@@ -13,24 +14,44 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 public class VocabServiceImpl implements VocabService {
+
     private final VocabRepository vocabRepository;
     private final VocabMapper vocabMapper;
+
     @Override
-    public Page<VocabResponse> getAllVocabs(VocabRequest request) {
+    public PageVocabResponse<VocabResponse> getAllVocabs(VocabRequest request) {
+
         if (request.getLimit() <= 0) {
             throw new IllegalArgumentException("limit phải lớn hơn 0");
         }
         if (request.getPage() <= 0) {
             throw new IllegalArgumentException("Page phải lớn hơn không 0");
         }
+
             int limit = request.getLimit();
             int page = request.getPage() - 1 ;
+
             Pageable pageable = PageRequest.of(page, limit);
-            Page<Vocab> pageVocab = vocabRepository.findByWordContaining(request.getSearch(), pageable);
-        return  pageVocab.map(vocabMapper::mapToVocab);
+
+            Page<Vocab> pageVocab = vocabRepository.findByTopicId(request.getTopicId(), pageable);
+
+            List<VocabResponse> data = pageVocab.getContent().stream()
+                    .map(vocabMapper::mapToVocab)
+                    .toList();
+
+        PageVocabResponse<VocabResponse> res = new PageVocabResponse<>();
+        res.setData(data);
+        res.setPage(page);
+        res.setLimit(limit);
+        res.setTotalPages(pageVocab.getTotalPages());
+        res.setTotalElements(pageVocab.getTotalElements());
+
+        return res;
     }
 
     @Override

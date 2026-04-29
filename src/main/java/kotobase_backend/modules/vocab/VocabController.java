@@ -1,6 +1,8 @@
 package kotobase_backend.modules.vocab;
 
+import jakarta.validation.Valid;
 import kotobase_backend.modules.vocab.dto.request.VocabRequest;
+import kotobase_backend.modules.vocab.dto.response.PageVocabResponse;
 import kotobase_backend.modules.vocab.dto.response.VocabResponse;
 import kotobase_backend.modules.vocab.entity.Vocab;
 import kotobase_backend.modules.vocab.service.VocabService;
@@ -17,12 +19,12 @@ public class VocabController {
 
     private final VocabService vocabService;
 
-    @GetMapping
-    public ResponseEntity<Page<VocabResponse>> getList(@ModelAttribute VocabRequest request) {
+    @GetMapping("/by_topic")
+    public ResponseEntity<PageVocabResponse<VocabResponse>> getList(@Valid @ModelAttribute VocabRequest request) {
         return ResponseEntity.ok(vocabService.getAllVocabs(request));
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/detal/{id}")
     public ResponseEntity<VocabResponse> getVocabById(@PathVariable Integer id) {
         return ResponseEntity.ok(vocabService.getVocabById(id));
     }

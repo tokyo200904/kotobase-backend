@@ -21,7 +21,7 @@ public class Topic {
     @Column(name = "id")
     private Integer id;
 
-    @Column(name = "name", length = 100)
+    @Column(name = "name", length = 100, nullable = false)
     private String name;
 
     @Column(name = "description;")

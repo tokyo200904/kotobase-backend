@@ -24,13 +24,13 @@ public class Kanji {
     @Column(name = "meaning", nullable = false)
     private String meaning;
 
-    @Column(name = "stroke_count")
+    @Column(name = "stroke_count",nullable = false)
     private Integer strokeCount;
 
     @Column(name = "is_premium", nullable = false)
     private Boolean isPremium;
 
-    @Column(name = "han")
+    @Column(name = "han", nullable = false)
     private String han;
 
     @ManyToOne

@@ -17,14 +17,14 @@ public class KanjiReading {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @Column(name = "reading")
+    @Column(name = "reading",nullable = false)
     private String reading;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "reading_type")
+    @Column(name = "reading_type",nullable = false)
     private KanjiType kanjiType;
 
-    @Column(name = "romaji")
+    @Column(name = "romaji",nullable = false)
     private String romaji;
 
     @ManyToOne

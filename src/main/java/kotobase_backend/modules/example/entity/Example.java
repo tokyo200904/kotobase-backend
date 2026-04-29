@@ -17,16 +17,16 @@ public class Example {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @Column(name = "target_type")
+    @Column(name = "target_type", nullable = false)
     private String targetType;
 
-    @Column(name = "content")
+    @Column(name = "content", nullable = false)
     private String content;
 
-    @Column(name = "meaning")
+    @Column(name = "meaning", nullable = false)
     private String meaning;
 
-    @Column(name = "romaji")
+    @Column(name = "romaji", nullable = false)
     private String romaji;
 
     @ManyToOne

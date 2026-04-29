@@ -28,9 +28,6 @@ public class kanjiServiceImpl implements KanjiService {
     @Override
     public List<KanjisResponse> getKanji(Level level) {
         List<Kanji> kanji = kanjiRepository.findByLevel(level);
-        if (kanji.isEmpty()){
-            return Collections.emptyList();
-        }
         return kanji.stream()
                 .map(kanjiMapper::toKanjiResponse)
                 .toList();

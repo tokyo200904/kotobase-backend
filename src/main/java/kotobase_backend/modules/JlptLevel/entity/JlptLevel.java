@@ -20,7 +20,7 @@ public class JlptLevel {
     private Integer id;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "level")
+    @Column(name = "level", nullable = false)
     private Level level;
 
     @Column(name = "is_premium", nullable = false)

@@ -10,5 +10,5 @@ import java.util.List;
 
 @Repository
 public interface LessonRepository extends JpaRepository<Lesson,Integer> {
-    List<Lesson> findByLevelOrderByLessonOrderAsc(JlptLevel jlptLevel);
+    List<Lesson> findByLevelIdOrderByLessonOrderAsc(Integer levelId);
 }

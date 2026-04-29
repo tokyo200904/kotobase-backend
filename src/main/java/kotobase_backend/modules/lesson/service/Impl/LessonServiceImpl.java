@@ -35,7 +35,7 @@ public class LessonServiceImpl implements LessonService {
         JlptLevel jlptLevel = jlptLevelRepository.findById(levelId)
                 .orElseThrow(() -> new ResourceNotFoundException("level không tồn tại"));
 
-        List<Lesson> lessons = lessonRepository.findByLevelOrderByLessonOrderAsc(jlptLevel);
+        List<Lesson> lessons = lessonRepository.findByLevelIdOrderByLessonOrderAsc(levelId);
         return lessons.stream()
                 .map(lessonMapper::toLessonResponse)
                 .toList();

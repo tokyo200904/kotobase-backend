@@ -36,7 +36,7 @@ public class VocabServiceImpl implements VocabService {
     @Override
     public VocabResponse getVocabById(Integer id) {
         Vocab newvocab = vocabRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Vocab id " + id + " not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("khong tim thay tu vung"));
         return vocabMapper.mapToVocab(newvocab);
     }
 }

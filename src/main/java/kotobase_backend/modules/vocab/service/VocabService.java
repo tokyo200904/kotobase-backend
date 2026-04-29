@@ -10,5 +10,5 @@ import java.util.Optional;
 
 public interface VocabService {
     public Page<VocabResponse> getAllVocabs(VocabRequest request);
-    public VocabResponse getVocabById(long id);
+    public VocabResponse getVocabById(Integer id);
 }

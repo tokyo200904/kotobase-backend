@@ -23,7 +23,7 @@ public class VocabController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<VocabResponse> getVocabById(@PathVariable long id) {
+    public ResponseEntity<VocabResponse> getVocabById(@PathVariable Integer id) {
         return ResponseEntity.ok(vocabService.getVocabById(id));
     }
 }

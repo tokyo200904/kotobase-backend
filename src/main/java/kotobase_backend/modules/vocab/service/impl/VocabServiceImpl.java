@@ -29,12 +29,12 @@ public class VocabServiceImpl implements VocabService {
             int limit = request.getLimit();
             int page = request.getPage() - 1 ;
             Pageable pageable = PageRequest.of(page, limit);
-            Page<Vocab> pageVocab = vocabRepository.findByKanjiContaining(request.getSearch(), pageable);
+            Page<Vocab> pageVocab = vocabRepository.findByWordContaining(request.getSearch(), pageable);
         return  pageVocab.map(vocabMapper::mapToVocab);
     }
 
     @Override
-    public VocabResponse getVocabById(long id) {
+    public VocabResponse getVocabById(Integer id) {
         Vocab newvocab = vocabRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Vocab id " + id + " not found"));
         return vocabMapper.mapToVocab(newvocab);

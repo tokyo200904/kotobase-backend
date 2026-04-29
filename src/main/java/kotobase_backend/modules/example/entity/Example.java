@@ -17,9 +17,6 @@ public class Example {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @Column(name = "target_id")
-    private Integer targetId;
-
     @Column(name = "target_type")
     private String targetType;
 

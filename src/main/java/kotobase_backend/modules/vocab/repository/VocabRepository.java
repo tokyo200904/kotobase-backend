@@ -7,6 +7,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface VocabRepository extends JpaRepository<Vocab, Long> {
-    Page<Vocab> findByKanjiContaining(String keyword, Pageable pageable);
+public interface VocabRepository extends JpaRepository<Vocab, Integer> {
+    Page<Vocab> findByWordContaining(String keyword, Pageable pageable);
 }

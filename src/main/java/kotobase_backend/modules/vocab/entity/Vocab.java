@@ -20,10 +20,10 @@ import java.util.List;
 public class Vocab {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long id;
+    private Integer id;
 
-    @Column(name = "kanji", columnDefinition = "NVARCHAR(100)")
-    private String kanji;
+    @Column(name = "word")
+    private String word;
 
     @Column(name = "romaji")
     private String romaji;
@@ -33,12 +33,6 @@ public class Vocab {
 
     @Column(name = "reading")
     private String reading;
-
-    @Column(name = "example")
-    private String example;
-
-    @Column(name = "created_at", updatable = false)
-    private LocalDateTime createdAt;
 
     @Column(name = "is_premium")
     private Boolean isPremium = false;
@@ -57,8 +51,5 @@ public class Vocab {
     @OneToMany(mappedBy = "vocabulary")
     private List<Example> examples;
 
-    @PrePersist
-    protected void onCreate() {
-        this.createdAt = LocalDateTime.now();
-    }
+
 }

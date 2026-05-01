@@ -1,4 +1,4 @@
-package kotobase_backend.modules.example.dto.response;
+package kotobase_backend.modules.examples.dto.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -11,5 +11,5 @@ public class ExampleResponse {
     private Integer id;
     private String content;
     private String meaning;
-    private String romaji;
+    private String displayOrder;
 }

@@ -1,7 +1,6 @@
-package kotobase_backend.modules.example.entity;
+package kotobase_backend.modules.examples.entity;
 
 import jakarta.persistence.*;
-import kotobase_backend.comom.enums.TargetType;
 import kotobase_backend.modules.audio.entity.Audio;
 import kotobase_backend.modules.vocab.entity.Vocab;
 import lombok.AllArgsConstructor;
@@ -9,18 +8,14 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "examples")
+@Table(name = "vocabulary_examples")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class Example {
+public class ExampleVocab {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
-
-    @Enumerated(EnumType.STRING)
-    @Column(name = "target_type", nullable = false)
-    private TargetType targetType;
 
     @Column(name = "content", nullable = false)
     private String content;
@@ -28,15 +23,15 @@ public class Example {
     @Column(name = "meaning", nullable = false)
     private String meaning;
 
-    @Column(name = "romaji", nullable = false)
-    private String romaji;
+    @Column(name = "display_order")
+    private Integer displayOrder;
 
     @ManyToOne
     @JoinColumn(name = "audio_id")
     private Audio audio;
 
     @ManyToOne
-    @JoinColumn(name = "target_Id", insertable = false, updatable = false)
+    @JoinColumn(name = "vocabulary_id")
     private Vocab vocabulary;
 
 }

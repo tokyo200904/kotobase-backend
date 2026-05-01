@@ -12,7 +12,7 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface VocabRepository extends JpaRepository<Vocab, Integer> {
 
-    @EntityGraph(attributePaths = "examples")
+    @EntityGraph(attributePaths = "exampleVocabs")
     @Query("select distinct v from Vocab v " +
             "join v.vocabularyTopics vt " +
             "where vt.topic.id = :topicId")

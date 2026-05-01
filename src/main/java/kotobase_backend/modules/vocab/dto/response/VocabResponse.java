@@ -1,6 +1,6 @@
 package kotobase_backend.modules.vocab.dto.response;
 
-import kotobase_backend.modules.example.dto.response.ExampleResponse;
+import kotobase_backend.modules.examples.dto.response.ExampleResponse;
 import lombok.Data;
 
 import java.util.List;

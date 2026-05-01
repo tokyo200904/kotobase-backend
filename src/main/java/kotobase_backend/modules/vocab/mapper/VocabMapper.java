@@ -1,7 +1,7 @@
 package kotobase_backend.modules.vocab.mapper;
 
-import kotobase_backend.modules.example.dto.response.ExampleResponse;
-import kotobase_backend.modules.example.mapper.ExampleMapper;
+import kotobase_backend.modules.examples.dto.response.ExampleResponse;
+import kotobase_backend.modules.examples.mapper.ExampleMapper;
 import kotobase_backend.modules.vocab.dto.response.VocabResponse;
 import kotobase_backend.modules.vocab.entity.Vocab;
 import lombok.RequiredArgsConstructor;
@@ -16,8 +16,7 @@ public class VocabMapper {
 
     public VocabResponse mapToVocab(Vocab v) {
         List<ExampleResponse> examples =
-                v.getExamples() == null ? List.of() : v.getExamples().stream()
-                        .filter(r -> r.getTargetType().name().equals("vocab"))
+                v.getExampleVocabs() == null ? List.of() : v.getExampleVocabs().stream()
                         .map(exampleMapper::toExampleResponse)
                         .toList();
 

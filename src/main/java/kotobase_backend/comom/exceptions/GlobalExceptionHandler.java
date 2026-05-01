@@ -6,7 +6,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 import java.time.LocalDateTime;
 import java.util.stream.Collectors;
@@ -17,6 +19,32 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<ErrorResponse> handleNotFound(ResourceNotFoundException ex, HttpServletRequest request) {
         return buildResponse(404, ex.getMessage(), "Not Found", request);
+    }
+
+    @ExceptionHandler(MissingServletRequestParameterException.class)
+    public ResponseEntity<ErrorResponse> handleMissingParam(
+            MissingServletRequestParameterException ex,
+            HttpServletRequest request) {
+
+        return buildResponse(
+                400,
+                "Thiếu tham số: " + ex.getParameterName(),
+                "Bad Request",
+                request
+        );
+    }
+
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<ErrorResponse> handleTypeMismatch(
+            MethodArgumentTypeMismatchException ex,
+            HttpServletRequest request) {
+
+        return buildResponse(
+                400,
+                "Giá trị không hợp lệ cho tham số: " + ex.getName(),
+                "Bad Request",
+                request
+        );
     }
 
     @ExceptionHandler(BadRequestException.class)

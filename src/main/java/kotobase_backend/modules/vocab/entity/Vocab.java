@@ -3,13 +3,12 @@ package kotobase_backend.modules.vocab.entity;
 import jakarta.persistence.*;
 import kotobase_backend.modules.JlptLevel.entity.JlptLevel;
 import kotobase_backend.modules.audio.entity.Audio;
-import kotobase_backend.modules.example.entity.Example;
+import kotobase_backend.modules.examples.entity.ExampleVocab;
 import kotobase_backend.modules.vocabularyTopic.entity.VocabularyTopic;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
@@ -48,7 +47,7 @@ public class Vocab {
     @OneToMany(mappedBy = "vocabulary")
     private List<VocabularyTopic> vocabularyTopics;
 
-    @OneToMany(mappedBy = "vocabulary")
-    private List<Example> examples;
+    @OneToMany(mappedBy = "vocabulary", fetch = FetchType.LAZY)
+    private List<ExampleVocab> exampleVocabs;
 
 }

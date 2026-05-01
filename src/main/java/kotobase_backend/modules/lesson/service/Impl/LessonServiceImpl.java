@@ -1,6 +1,7 @@
 package kotobase_backend.modules.lesson.service.Impl;
 
 import kotobase_backend.comom.enums.Level;
+import kotobase_backend.comom.enums.TargetType;
 import kotobase_backend.comom.exceptions.CustomException.BadRequestException;
 import kotobase_backend.comom.exceptions.CustomException.ResourceNotFoundException;
 import kotobase_backend.modules.JlptLevel.entity.JlptLevel;
@@ -27,7 +28,7 @@ public class LessonServiceImpl implements LessonService {
     private final JlptLevelRepository jlptLevelRepository;
 
     @Override
-    public List<LessonResponse> findByLevel(Integer levelId) {
+    public List<LessonResponse> findByLevel(Integer levelId, TargetType type) {
         if (levelId == null) {
             throw new BadRequestException("level không được để trống");
         }
@@ -35,7 +36,8 @@ public class LessonServiceImpl implements LessonService {
         JlptLevel jlptLevel = jlptLevelRepository.findById(levelId)
                 .orElseThrow(() -> new ResourceNotFoundException("level không tồn tại"));
 
-        List<Lesson> lessons = lessonRepository.findByLevelIdOrderByLessonOrderAsc(levelId);
+        List<Lesson> lessons = lessonRepository.findByLevelIdAndLessonTypeOrderByLessonOrderAsc(levelId, type);
+
         return lessons.stream()
                 .map(lessonMapper::toLessonResponse)
                 .toList();

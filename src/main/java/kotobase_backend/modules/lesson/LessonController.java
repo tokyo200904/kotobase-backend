@@ -1,5 +1,6 @@
 package kotobase_backend.modules.lesson;
 
+import kotobase_backend.comom.enums.TargetType;
 import kotobase_backend.modules.lesson.dto.response.LessonResponse;
 import kotobase_backend.modules.lesson.service.LessonService;
 import lombok.RequiredArgsConstructor;
@@ -16,7 +17,8 @@ public class LessonController {
     private final LessonService lessonService;
 
     @GetMapping("/levels/{id}")
-    public ResponseEntity<List<LessonResponse>> findAll(@PathVariable Integer id) {
-        return ResponseEntity.ok(lessonService.findByLevel(id));
+    public ResponseEntity<List<LessonResponse>> findAll(@PathVariable Integer id,
+                                                        @RequestParam TargetType type) {
+        return ResponseEntity.ok(lessonService.findByLevel(id,type));
     }
 }

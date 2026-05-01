@@ -1,6 +1,7 @@
 package kotobase_backend.modules.lesson.entity;
 
 import jakarta.persistence.*;
+import kotobase_backend.comom.enums.TargetType;
 import kotobase_backend.modules.JlptLevel.entity.JlptLevel;
 import kotobase_backend.modules.topic.entity.Topic;
 import lombok.AllArgsConstructor;
@@ -22,6 +23,10 @@ public class Lesson {
 
     @Column(name = "title",length = 100,nullable = false)
     private String title;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "lesson_type")
+    private TargetType lessonType;
 
     @Column(name = "lesson_order", nullable = false)
     private Integer lessonOrder;

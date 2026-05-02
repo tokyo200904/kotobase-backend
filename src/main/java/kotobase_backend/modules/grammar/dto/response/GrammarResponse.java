@@ -1,8 +1,11 @@
 package kotobase_backend.modules.grammar.dto.response;
 
+import kotobase_backend.modules.examples.dto.response.ExampleResponse;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import java.util.List;
 
 @Data
 @NoArgsConstructor
@@ -14,4 +17,5 @@ public class GrammarResponse {
     private String meaning;
     private String usages;
     private String note;
+    private List<ExampleResponse> examples;
 }

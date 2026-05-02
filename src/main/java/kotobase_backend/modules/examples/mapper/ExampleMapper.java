@@ -12,6 +12,7 @@ public class ExampleMapper {
         er.setId(exampleVocab.getId());
         er.setMeaning(exampleVocab.getMeaning());
         er.setContent(exampleVocab.getContent());
+        er.setDisplayOrder(exampleVocab.getDisplayOrder());
         return er;
     }
 
@@ -20,6 +21,7 @@ public class ExampleMapper {
         er.setId(exampleGrammar.getId());
         er.setMeaning(exampleGrammar.getMeaning());
         er.setContent(exampleGrammar.getContent());
+        er.setDisplayOrder(exampleGrammar.getDisplayOrder());
         return er;
     }
 }

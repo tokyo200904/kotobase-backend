@@ -1,5 +1,6 @@
 package kotobase_backend.modules.grammar.service.impl;
 
+import kotobase_backend.comom.enums.TargetType;
 import kotobase_backend.comom.exceptions.CustomException.BadRequestException;
 import kotobase_backend.comom.exceptions.CustomException.ResourceNotFoundException;
 import kotobase_backend.modules.grammar.dto.response.GrammarResponse;
@@ -28,8 +29,8 @@ public class GrammarServiceImpl implements GrammarService {
         if (lessonId == null) {
             throw new BadRequestException("lessonId không được  để trống");
         }
-        lessonRepository.findById(lessonId)
-                .orElseThrow(() -> new ResourceNotFoundException("lesson không tồn tại"));
+        lessonRepository.findByIdAndLessonType(lessonId, TargetType.grammar)
+                .orElseThrow(() -> new ResourceNotFoundException("lesson của grammar này không tồn tại"));
 
         List<Grammar> grammar = grammarRepository.findAllByLessonId(lessonId);
 
@@ -38,4 +39,14 @@ public class GrammarServiceImpl implements GrammarService {
                 .toList();
     }
 
+    @Override
+    public GrammarResponse findById(Integer id) {
+        if (id == null) {
+            throw new BadRequestException("id không được null");
+        }
+        Grammar grammar = grammarRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("ngữ pháp này không tồn tại"));
+
+        return grammarMapper.toGrammarResponse(grammar);
+    }
 }

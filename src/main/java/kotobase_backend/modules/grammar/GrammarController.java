@@ -1,5 +1,6 @@
 package kotobase_backend.modules.grammar;
 
+import kotobase_backend.modules.grammar.dto.response.GrammarResponse;
 import kotobase_backend.modules.grammar.dto.response.GrammarTitleResponse;
 import kotobase_backend.modules.grammar.service.GrammarService;
 import lombok.RequiredArgsConstructor;
@@ -20,4 +21,8 @@ public class GrammarController {
         return ResponseEntity.ok(grammarService.findByLessonId(lessonId));
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<GrammarResponse> getById(@PathVariable Integer id){
+        return ResponseEntity.ok(grammarService.findById(id));
+    }
 }

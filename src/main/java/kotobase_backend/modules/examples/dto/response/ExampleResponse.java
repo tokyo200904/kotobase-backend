@@ -11,5 +11,5 @@ public class ExampleResponse {
     private Integer id;
     private String content;
     private String meaning;
-    private String displayOrder;
+    private Integer displayOrder;
 }

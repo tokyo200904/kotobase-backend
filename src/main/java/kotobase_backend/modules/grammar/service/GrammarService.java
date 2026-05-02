@@ -8,4 +8,5 @@ import java.util.List;
 public interface GrammarService {
 
     public List<GrammarTitleResponse> findByLessonId(Integer lessonId);
+    public GrammarResponse findById(Integer id);
 }

@@ -24,7 +24,7 @@ public class ExampleGrammar {
     private String meaning;
 
     @Column(name = "display_order")
-    private String displayOrder;
+    private Integer displayOrder;
 
     @ManyToOne
     @JoinColumn(name = "audio_id")

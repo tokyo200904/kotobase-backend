@@ -38,6 +38,6 @@ public class Lesson {
     @JoinColumn(name = "level_id")
     private JlptLevel level;
 
-    @OneToMany(mappedBy = "lesson")
+    @OneToMany(mappedBy = "lesson",cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Topic> topics;
 }

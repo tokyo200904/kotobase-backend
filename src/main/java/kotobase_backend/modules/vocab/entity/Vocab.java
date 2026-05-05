@@ -44,7 +44,7 @@ public class Vocab {
     @JoinColumn(name = "audio_id")
     private Audio audio;
 
-    @OneToMany(mappedBy = "vocabulary")
+    @OneToMany(mappedBy = "vocabulary", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<VocabularyTopic> vocabularyTopics;
 
     @OneToMany(mappedBy = "vocabulary", fetch = FetchType.LAZY)

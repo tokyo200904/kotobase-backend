@@ -28,6 +28,6 @@ public class Topic {
     @JoinColumn(name = "lesson_id")
     private Lesson lesson;
 
-    @OneToMany(mappedBy = "topic")
+    @OneToMany(mappedBy = "topic", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<VocabularyTopic> vocabularyTopics;
 }

@@ -37,7 +37,7 @@ public class Kanji {
     @JoinColumn(name = "level_id")
     private JlptLevel level;
 
-    @OneToMany(mappedBy = "kanji")
+    @OneToMany(mappedBy = "kanji", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<KanjiReading> readings;
 }
 

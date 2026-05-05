@@ -7,6 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 @Entity
 @Table(name = "questions")
@@ -35,4 +36,14 @@ public class Question {
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "image_id", nullable = false)
     private Image image;
+
+    @OneToMany(mappedBy = "question", cascade = CascadeType.ALL)
+    private List<Answer> answers;
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "group_id", nullable = false)
+    private QuestionGroups questionGroup;
+
+    @OneToMany(mappedBy = "question", cascade = CascadeType.ALL)
+    private List<ExamAttemptAnswer> examAttemptAnswers;
 }

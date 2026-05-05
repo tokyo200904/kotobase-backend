@@ -8,6 +8,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Entity
 @Table(name = "question_groups")
 @Data
@@ -36,4 +38,12 @@ public class QuestionGroups {
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "image_id", nullable = false)
     private Image image;
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "section_id", nullable = false)
+    private ExamSection section;
+
+    @OneToMany(mappedBy = "questionGroup", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Question> questions;
+
 }

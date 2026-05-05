@@ -6,6 +6,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Entity
 @Table(name = "exam_sections")
 @Data
@@ -37,5 +39,11 @@ public class ExamSection {
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "exam_id", nullable = false)
-    private exam exam;
+    private Exam exam;
+
+    @OneToMany(mappedBy = "section", cascade = CascadeType.ALL, orphanRemoval = true )
+    private List<ExamAttemptSection> examAttemptSections;
+
+    @OneToMany(mappedBy = "section", cascade = CascadeType.ALL, orphanRemoval = true )
+    private List<QuestionGroups> questionGroups;
 }

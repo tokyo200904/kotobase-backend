@@ -6,6 +6,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -21,6 +22,12 @@ public class Exam {
 
     @Column(name = "title", nullable = false)
     private String title;
+
+    @Column(name = "total_questions", nullable = false)
+    private Integer totalQuestions;
+
+    @Column(name = "max_score", nullable = false, precision = 5, scale = 2)
+    private BigDecimal maxScore;
 
     @Column(name = "duration_minutes",nullable = false)
     private int durationMinutes;

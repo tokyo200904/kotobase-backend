@@ -6,6 +6,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @Entity
@@ -31,8 +32,11 @@ public class ExamSection {
     @Column(name = "min_passing_score", nullable = false)
     private int minPassingScore;
 
-    @Column(name = "max_score", nullable = false)
-    private int maxScore;
+    @Column(name = "total_questions", nullable = false)
+    private int totalQuestions;
+
+    @Column(name = "max_score", nullable = false, precision = 5, scale = 2)
+    private BigDecimal maxScore;
 
     @Column(name = "display_order", nullable = false)
     private int displayOrder;

@@ -1,6 +1,7 @@
 package kotobase_backend.modules.vocab.service.impl;
 
 import kotobase_backend.comom.exceptions.CustomException.ResourceNotFoundException;
+import kotobase_backend.modules.topic.repository.TopicRepository;
 import kotobase_backend.modules.vocab.dto.request.VocabRequest;
 import kotobase_backend.modules.vocab.dto.response.PageVocabResponse;
 import kotobase_backend.modules.vocab.dto.response.VocabResponse;
@@ -22,15 +23,14 @@ public class VocabServiceImpl implements VocabService {
 
     private final VocabRepository vocabRepository;
     private final VocabMapper vocabMapper;
+    private final TopicRepository topicRepository;
 
     @Override
     public PageVocabResponse<VocabResponse> getAllVocabs(VocabRequest request) {
 
-        if (request.getLimit() <= 0) {
-            throw new IllegalArgumentException("limit phải lớn hơn 0");
-        }
-        if (request.getPage() <= 0) {
-            throw new IllegalArgumentException("Page phải lớn hơn không 0");
+        boolean check = topicRepository.existsById(request.getTopicId());
+        if(!check){
+            throw new ResourceNotFoundException("không tìm thâý topic");
         }
 
             int limit = request.getLimit();
@@ -50,7 +50,6 @@ public class VocabServiceImpl implements VocabService {
         res.setLimit(limit);
         res.setTotalPages(pageVocab.getTotalPages());
         res.setTotalElements(pageVocab.getTotalElements());
-
         return res;
     }
 

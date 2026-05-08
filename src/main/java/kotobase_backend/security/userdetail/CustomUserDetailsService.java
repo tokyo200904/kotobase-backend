@@ -1,0 +1,22 @@
+package kotobase_backend.security.userdetail;
+
+import kotobase_backend.modules.user.entity.User;
+import kotobase_backend.modules.user.repository.UserRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.stereotype.Service;
+
+@Service
+@RequiredArgsConstructor
+public class CustomUserDetailsService implements UserDetailsService {
+
+    private UserRepository userRepository;
+    @Override
+    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("khong tim thay user"));
+        return new CustomUserDetails(user);
+    }
+}

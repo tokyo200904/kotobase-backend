@@ -1,6 +1,7 @@
 package kotobase_backend.modules.user.entity;
 
 import jakarta.persistence.*;
+import kotobase_backend.comom.enums.RoleName;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -19,7 +20,7 @@ public class Role {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "name", nullable = false)
-    private Role role;
+    private RoleName role;
 
     @OneToMany(mappedBy = "roleName",cascade = CascadeType.ALL, orphanRemoval = true)
     private List<User> users;

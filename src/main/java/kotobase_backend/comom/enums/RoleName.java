@@ -1,6 +1,6 @@
 package kotobase_backend.comom.enums;
 
-public enum Role {
+public enum RoleName {
     admin,
     user
 }

@@ -12,6 +12,7 @@ public class RegisterRequest {
     private String email;
 
     @NotBlank(message = "Mat khau khong duoc de trong")
+    @Size(min = 5, message = "mật khẩu quá ngắn")
     private String password;
 
     @NotBlank(message = "ten khong duoc de trong")

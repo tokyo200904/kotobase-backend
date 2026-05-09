@@ -13,6 +13,7 @@ public class AuthMapper {
         userInfoResponse.setFullName(user.getFullName());
         userInfoResponse.setRole(user.getRoleName().getRole());
         userInfoResponse.setPhoto(user.getPhoto());
+        userInfoResponse.setIsEnabled(user.getIsEnabled());
         return userInfoResponse;
     }
 }

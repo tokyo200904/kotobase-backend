@@ -42,7 +42,7 @@ public class AuthServiceImpl implements AuthService {
                     new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
             );
             User user = userRepository.findByEmail(request.getEmail())
-                    .orElseThrow(() -> new BadCredentialsException("email không tồn tại"));
+                    .orElseThrow(() -> new RuntimeException("email không tồn tại"));
             UserDetails userDetails = customUserDetailsService.loadUserByUsername(request.getEmail());
             String token = jwtService.genarateToken(userDetails);
 
@@ -51,9 +51,10 @@ public class AuthServiceImpl implements AuthService {
                     .userInfo(authMapper.mapToUserInfoResponse(user))
                     .build();
 
-        }
-        catch (DisabledException e) {
+        } catch (DisabledException e) {
             throw new RuntimeException("tài khoản đả bị ban");
+        } catch (BadCredentialsException e) {
+            throw new RuntimeException("Sai email hoặc mật khẩu");
         }
     }
 
@@ -63,7 +64,7 @@ public class AuthServiceImpl implements AuthService {
         if (exists) {
             throw new BadCredentialsException("email đã tồn tại");
         }
-        Role roleUser = roleRepository.findByRole(RoleName.user)
+        Role roleUser = roleRepository.findByRole(RoleName.USER)
                 .orElseThrow(() -> new RuntimeException("khong tim thay role"));
 
         User user = new User();
@@ -71,13 +72,13 @@ public class AuthServiceImpl implements AuthService {
         user.setFullName(request.getFullname());
         user.setPassword(passwordEncoder.encode(request.getPassword()));
         user.setRoleName(roleUser);
+        user.setIsEnabled(true);
+        user.setPhoto(null);
 
         User savedUser = userRepository.save(user);
 
         CustomUserDetails customUserDetails = new CustomUserDetails(savedUser);
-
         String token = jwtService.genarateToken(customUserDetails);
-
         return AuthResponse.builder()
                 .token(token)
                 .userInfo(authMapper.mapToUserInfoResponse(savedUser))

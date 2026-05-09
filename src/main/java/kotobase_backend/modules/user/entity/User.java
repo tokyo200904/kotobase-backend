@@ -40,5 +40,4 @@ public class User {
     @JoinColumn(name = "role", nullable = false)
     private Role roleName;
 
-
 }

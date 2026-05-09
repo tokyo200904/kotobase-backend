@@ -1,6 +1,8 @@
 package kotobase_backend.modules.auth;
 
+import jakarta.validation.Valid;
 import kotobase_backend.modules.auth.dto.request.LoginRequest;
+import kotobase_backend.modules.auth.dto.request.RegisterRequest;
 import kotobase_backend.modules.auth.dto.response.AuthResponse;
 import kotobase_backend.modules.auth.service.AuthService;
 import lombok.RequiredArgsConstructor;
@@ -16,8 +18,11 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<AuthResponse> login(@RequestBody LoginRequest loginRequest){
-        AuthResponse authResponse = authService.login(loginRequest);
-        return ResponseEntity.ok(authResponse);
+        return ResponseEntity.ok(authService.login(loginRequest));
     }
 
+    @PostMapping("/register")
+    public ResponseEntity<AuthResponse> register(@Valid @RequestBody RegisterRequest registerRequest){
+        return ResponseEntity.ok(authService.register(registerRequest));
+    }
 }

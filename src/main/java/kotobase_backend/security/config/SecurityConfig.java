@@ -36,7 +36,6 @@ public class SecurityConfig {
                         .requestMatchers("/api/v1/auth/**").permitAll()
                         .requestMatchers("/api/v1/exams").permitAll()
                         .requestMatchers("/api/v1/kanji").permitAll()
-
                         .anyRequest().permitAll()
                 )
 

@@ -6,14 +6,14 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class AuthMapper {
-    public UserInfoResponse mapToUserInfoResponse(User user) {
-        UserInfoResponse userInfoResponse = new UserInfoResponse();
-        userInfoResponse.setId(user.getId());
-        userInfoResponse.setEmail(user.getEmail());
-        userInfoResponse.setFullName(user.getFullName());
-        userInfoResponse.setRole(user.getRoleName().getRole());
-        userInfoResponse.setPhoto(user.getPhoto());
-        userInfoResponse.setIsEnabled(user.getIsEnabled());
-        return userInfoResponse;
-    }
+//    public UserInfoResponse mapToUserInfoResponse(User user) {
+//
+//        UserInfoResponse userInfoResponse = new UserInfoResponse();
+//        userInfoResponse.setId(user.getId());
+//        userInfoResponse.setEmail(user.getEmail());
+//        userInfoResponse.setFullName(user.getFullName());
+//        userInfoResponse.setRole(user.getRoleName().getRole());
+//        userInfoResponse.setPhoto(user.getPhoto());
+//        return userInfoResponse;
+//    }
 }

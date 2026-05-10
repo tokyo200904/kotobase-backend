@@ -1,5 +1,6 @@
 package kotobase_backend.modules.auth.service.impl;
 
+import kotobase_backend.comom.enums.AuthProvider;
 import kotobase_backend.comom.enums.RoleName;
 import kotobase_backend.modules.auth.dto.request.LoginRequest;
 import kotobase_backend.modules.auth.dto.request.RegisterRequest;
@@ -19,6 +20,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -48,7 +50,7 @@ public class AuthServiceImpl implements AuthService {
 
             return AuthResponse.builder()
                     .token(token)
-                    .userInfo(authMapper.mapToUserInfoResponse(user))
+//                    .userInfo(authMapper.mapToUserInfoResponse(user))
                     .build();
 
         } catch (DisabledException e) {
@@ -73,6 +75,7 @@ public class AuthServiceImpl implements AuthService {
         user.setPassword(passwordEncoder.encode(request.getPassword()));
         user.setRoleName(roleUser);
         user.setIsEnabled(true);
+        user.setProvider(AuthProvider.LOCAL);
         user.setPhoto(null);
 
         User savedUser = userRepository.save(user);
@@ -81,7 +84,22 @@ public class AuthServiceImpl implements AuthService {
         String token = jwtService.genarateToken(customUserDetails);
         return AuthResponse.builder()
                 .token(token)
-                .userInfo(authMapper.mapToUserInfoResponse(savedUser))
+//                .userInfo(authMapper.mapToUserInfoResponse(savedUser))
+                .build();
+    }
+
+    @Override
+    public UserInfoResponse getMe(String email) {
+
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("không tìm thấy user"));
+
+        return UserInfoResponse.builder()
+                .id(user.getId())
+                .email(user.getEmail())
+                .role(user.getRoleName().getRole())
+                .photo(user.getPhoto()!=null ? user.getPhoto() : "")
+                .fullName(user.getFullName())
                 .build();
     }
 }

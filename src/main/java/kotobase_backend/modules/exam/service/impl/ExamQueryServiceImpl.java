@@ -1,6 +1,5 @@
 package kotobase_backend.modules.exam.service.impl;
 
-import kotobase_backend.comom.exceptions.CustomException.BadRequestException;
 import kotobase_backend.comom.exceptions.CustomException.ResourceNotFoundException;
 import kotobase_backend.modules.JlptLevel.repository.JlptLevelRepository;
 import kotobase_backend.modules.exam.dto.request.ExamRequest;
@@ -9,7 +8,7 @@ import kotobase_backend.modules.exam.dto.response.PageExamResponse;
 import kotobase_backend.modules.exam.entity.Exam;
 import kotobase_backend.modules.exam.mapper.ExamMapper;
 import kotobase_backend.modules.exam.repository.ExamRepository;
-import kotobase_backend.modules.exam.service.ExamService;
+import kotobase_backend.modules.exam.service.ExamQueryService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -21,7 +20,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-public class ExamServiceImpl implements ExamService {
+public class ExamQueryServiceImpl implements ExamQueryService {
     private final ExamRepository examRepository;
     private final JlptLevelRepository jlptLevelRepository;
     private final ExamMapper examMapper;
@@ -50,6 +49,17 @@ public class ExamServiceImpl implements ExamService {
         response.setTotalPages(pageExam.getTotalPages());
         response.setTotalElements(pageExam.getTotalElements());
         return response;
-
     }
+
+    @Override
+    public ExamResponse getExamById(Long id) {
+        if (id == null) {
+            throw new ResourceNotFoundException("mã bài thị null");
+        }
+        Exam exam = examRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("không tìm thấy đề thi"));
+        return examMapper.toExamResponse(exam);
+    }
+
+
 }

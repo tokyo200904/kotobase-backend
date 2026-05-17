@@ -2,6 +2,7 @@ package kotobase_backend.modules.exam;
 
 import jakarta.validation.Valid;
 import kotobase_backend.modules.exam.dto.request.ExamRequest;
+import kotobase_backend.modules.exam.dto.response.ExamDetailResponse;
 import kotobase_backend.modules.exam.dto.response.ExamResponse;
 import kotobase_backend.modules.exam.dto.response.PageExamResponse;
 import kotobase_backend.modules.exam.service.ExamQueryService;
@@ -22,7 +23,8 @@ public class ExamController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ExamResponse> getExamById(@PathVariable Long id) {
-        return ResponseEntity.ok(examService.getExamById(id));
+    public ResponseEntity<ExamDetailResponse> getExamById(@PathVariable Long id) {
+        return ResponseEntity.ok(examService.getDetailExamById(id));
     }
+
 }

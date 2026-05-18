@@ -19,5 +19,4 @@ public class ExamSectionResponse {
     private BigDecimal maxScore;
     private int minPassingScore;
     private int displayOrder;
-
 }

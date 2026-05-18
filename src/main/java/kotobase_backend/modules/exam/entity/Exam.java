@@ -36,7 +36,7 @@ public class Exam {
     private int passingScore;
 
     @Column(name = "is_published")
-    private boolean isPublished;
+    private Boolean isPublished;
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;

@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -19,4 +20,6 @@ public interface ExamSectionRepository extends JpaRepository<ExamSection, Long> 
             "where s.id = :sectionId " +
             "order by qg.displayOrder, q.displayOrder, a.displayOrder ")
     Optional<ExamSection> getExamSectionBySectionId(@Param("sectionId") Long sectionId);
+
+    List<ExamSection> findByExam_IdOrderByDisplayOrderAsc(Long examId);
 }

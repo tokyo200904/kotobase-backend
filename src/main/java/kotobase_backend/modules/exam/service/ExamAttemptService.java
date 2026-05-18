@@ -1,8 +1,10 @@
 package kotobase_backend.modules.exam.service;
 
+import kotobase_backend.modules.exam.dto.response.ExamStartResponse;
 import kotobase_backend.modules.exam.dto.response.SectionResponse;
 
 public interface ExamAttemptService {
-    public SectionResponse getSectionById(Long attemptId, Long sectionId, Integer currentUserId);
+    public SectionResponse getSectionDetail(Long attemptId, Long sectionId, Integer currentUserId);
+    public ExamStartResponse startOrResumeExam(Integer userId, Long examId);
 
 }

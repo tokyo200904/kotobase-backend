@@ -6,6 +6,7 @@ import kotobase_backend.comom.exceptions.CustomException.ForbiddenException;
 import kotobase_backend.comom.exceptions.CustomException.ResourceNotFoundException;
 import kotobase_backend.modules.exam.dto.response.ExamStartResponse;
 import kotobase_backend.modules.exam.dto.response.SectionResponse;
+import kotobase_backend.modules.exam.dto.response.SectionSubmitResponse;
 import kotobase_backend.modules.exam.entity.*;
 import kotobase_backend.modules.exam.mapper.ExamAttemptMapper;
 import kotobase_backend.modules.exam.repository.*;
@@ -36,6 +37,7 @@ public class ExamAttemptServiceImpl implements ExamAttemptService {
     private final ExamAttemptAnswerRepository examAttemptAnswerRepository;
     private final UserRepository userRepository;
 
+    //hàm lấy danh sách câu hỏi đáp án
     @Override
     public SectionResponse getSectionDetail(Long attemptId, Long sectionId, Integer currentUserId) {
         ExamAttempt attempt = examAttemptRepository.findById(attemptId)
@@ -68,6 +70,7 @@ public class ExamAttemptServiceImpl implements ExamAttemptService {
         return examAttemptMapper.toExamSectionResponse(examSection);
     }
 
+    // hàm khi người dùng ấn bắt đầu thi sẻ xem người dùng đang thi rở hay moi bắt đầu
     @Transactional
     @Override
     public ExamStartResponse startOrResumeExam(Integer userId, Long examId) {
@@ -78,14 +81,74 @@ public class ExamAttemptServiceImpl implements ExamAttemptService {
 
         Optional<ExamAttempt> examAttempt = examAttemptRepository
                 .findByUser_IdAndExam_IdAndStatus(userId,examId,AttemptStatus.in_progress);
-        if (examAttempt.isPresent()) {
-            return resumeExam(examAttempt.get());
+        return examAttempt.map(this::resumeExam).orElseGet(() -> newExam(userId, exam));
+    }
+
+    // hàm khi người dùng ấn hoàn thành phần thi
+    @Override
+    public SectionSubmitResponse submitSection(Long sectionId, Long attemptId, Integer userId) {
+        LocalDateTime now = LocalDateTime.now();
+
+        ExamAttempt examAttempt = examAttemptRepository.findById(attemptId)
+                .orElseThrow(() -> new ResourceNotFoundException("khong tim thay luot thi"));
+
+        if (examAttempt.getUser().getId().equals(userId)) {
+            throw new ResourceNotFoundException("ban khong co quyen thao tac");
         }
-        else {
-            return newExam(userId,exam);
+        if (examAttempt.getStatus() != AttemptStatus.in_progress) {
+            throw new ResourceNotFoundException("bai thi nay da huy ban khong co quyen thao tac");
         }
 
+        ExamAttemptSection attemptSection = examAttemptSectionRepository.findByExamAttempt_IdAndSection_Id(attemptId,sectionId)
+                .orElseThrow(() -> new ResourceNotFoundException("khong tim thay phan thi"));
+
+        if (attemptSection.getStatus() == StatusSection.completed){
+            throw new ResourceNotFoundException("phan thi nay da duoc nop");
+        }
+
+        attemptSection.setStatus(StatusSection.completed);
+        attemptSection.setCompletedAt(now);
+        examAttemptSectionRepository.save(attemptSection);
+
+        ExamSection sectionInfo = examSectionRepository.findById(sectionId)
+                .orElseThrow(() -> new ResourceNotFoundException("khong tim thay phan thi thi"));
+
+        int disPlayOrder = sectionInfo.getDisplayOrder();
+
+        Optional<ExamSection> examSection = examSectionRepository
+                .findFirstByExam_IdAndDisplayOrderGreaterThanOrderByDisplayOrderAsc(sectionInfo.getExam().getId(), disPlayOrder);
+
+        SectionSubmitResponse sectionSubmitResponse = new SectionSubmitResponse();
+
+        if (examSection.isPresent()) {
+            ExamSection nextExamSection = examSection.get();
+
+            ExamAttemptSection nextAttemptSection = examAttemptSectionRepository
+                    .findByExamAttempt_IdAndSection_Id(attemptId,nextExamSection.getId())
+                    .orElseThrow(() -> new ResourceNotFoundException("khong tim thay phan thi"));
+
+            nextAttemptSection.setStartedAt(now);
+            nextAttemptSection.setStatus(StatusSection.in_progress);
+            examAttemptSectionRepository.save(nextAttemptSection);
+
+            sectionSubmitResponse.setExamFinished(false);
+            sectionSubmitResponse.setNextSectionId(nextExamSection.getId());
+        }
+        else {
+            examAttempt.setStatus(AttemptStatus.submitted);
+            examAttempt.setCompletedAt(now);
+            examAttemptRepository.save(examAttempt);
+
+
+
+            sectionSubmitResponse.setExamFinished(true);
+            sectionSubmitResponse.setNextSectionId(null);
+        }
+
+        return sectionSubmitResponse;
     }
+
+
 
     private ExamStartResponse newExam(Integer userId, Exam exam) {
         LocalDateTime now = LocalDateTime.now();
@@ -141,9 +204,9 @@ public class ExamAttemptServiceImpl implements ExamAttemptService {
         ExamSection examSection = examSectionRepository.findById(attemptSection.getSection().getId())
                 .orElseThrow(() -> new ResourceNotFoundException("khong tim thay bai thi"));
 
-        Long time1 = Duration.between(attemptSection.getStartedAt(), now).getSeconds();
-        Long time2 = examSection.getDurationMinutes()*60L;
-        Long time3 = time2 - time1;
+        long time1 = Duration.between(attemptSection.getStartedAt(), now).getSeconds();
+        long time2 = examSection.getDurationMinutes()*60L;
+        long time3 = time2 - time1;
 
         if (time3 <= 0){
             throw new RuntimeException("da het gio");

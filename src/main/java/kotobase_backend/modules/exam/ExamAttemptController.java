@@ -2,6 +2,7 @@ package kotobase_backend.modules.exam;
 
 import kotobase_backend.modules.exam.dto.response.ExamStartResponse;
 import kotobase_backend.modules.exam.dto.response.SectionResponse;
+import kotobase_backend.modules.exam.dto.response.SectionSubmitResponse;
 import kotobase_backend.modules.exam.service.ExamAttemptService;
 import kotobase_backend.security.userdetail.CustomUserDetails;
 import lombok.RequiredArgsConstructor;
@@ -29,5 +30,13 @@ public class ExamAttemptController {
                                                 @AuthenticationPrincipal CustomUserDetails userDetails) {
         Integer userId = userDetails.getUserId();
         return ResponseEntity.ok(examAttemptService.startOrResumeExam(userId, examId));
+    }
+
+    @PostMapping("/{attemptId}/sections/{sectionId}/submit")
+    public ResponseEntity<SectionSubmitResponse> submitSection(@PathVariable Long attemptId,
+                                                               @PathVariable Long sectionId,
+                                                               @AuthenticationPrincipal CustomUserDetails userDetails){
+        Integer userId = userDetails.getUserId();
+        return ResponseEntity.ok(examAttemptService.submitSection( sectionId, attemptId, userId));
     }
 }

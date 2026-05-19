@@ -22,4 +22,6 @@ public interface ExamSectionRepository extends JpaRepository<ExamSection, Long> 
     Optional<ExamSection> getExamSectionBySectionId(@Param("sectionId") Long sectionId);
 
     List<ExamSection> findByExam_IdOrderByDisplayOrderAsc(Long examId);
+
+    Optional<ExamSection> findFirstByExam_IdAndDisplayOrderGreaterThanOrderByDisplayOrderAsc(Long examId, int displayOrder);
 }

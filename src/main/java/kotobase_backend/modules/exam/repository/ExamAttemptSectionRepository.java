@@ -11,4 +11,5 @@ import java.util.Optional;
 public interface ExamAttemptSectionRepository extends JpaRepository<ExamAttemptSection, Long> {
     Optional<ExamAttemptSection> findByExamAttempt_IdAndSection_Id(Long attemptId, Long sectionId);
     Optional<ExamAttemptSection> findByExamAttempt_IdAndStatus(Long attemptId, StatusSection status);
+
 }

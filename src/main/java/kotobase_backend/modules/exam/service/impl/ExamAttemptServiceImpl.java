@@ -154,7 +154,7 @@ public class ExamAttemptServiceImpl implements ExamAttemptService {
         LocalDateTime now = LocalDateTime.now();
 
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("khong tim user"));
+                .orElseThrow(() -> new ResourceNotFoundException("khong tim thay user"));
         ExamAttempt newExamAttempt = new ExamAttempt();
         newExamAttempt.setExam(exam);
         newExamAttempt.setUser(user);
@@ -195,7 +195,7 @@ public class ExamAttemptServiceImpl implements ExamAttemptService {
         return examStartResponse;
     }
 
-    private ExamStartResponse resumeExam(ExamAttempt  examAttempt) {
+    private ExamStartResponse resumeExam(ExamAttempt examAttempt) {
         LocalDateTime now = LocalDateTime.now();
 
         ExamAttemptSection attemptSection = examAttemptSectionRepository.findByExamAttempt_IdAndStatus(examAttempt.getId(), StatusSection.in_progress)
@@ -203,6 +203,46 @@ public class ExamAttemptServiceImpl implements ExamAttemptService {
 
         ExamSection examSection = examSectionRepository.findById(attemptSection.getSection().getId())
                 .orElseThrow(() -> new ResourceNotFoundException("khong tim thay bai thi"));
+
+        long timeResume = Duration.between(attemptSection.getStartedAt(), now).getSeconds();
+        long timeSection = examSection.getDurationMinutes() * 60L;
+
+        if (timeResume > timeSection) {
+            LocalDateTime endtime = attemptSection.getStartedAt().plusMinutes(examSection.getDurationMinutes());
+
+            attemptSection.setStatus(StatusSection.completed);
+            attemptSection.setCompletedAt(endtime);
+            examAttemptSectionRepository.save(attemptSection);
+
+            Optional<ExamSection> nextSection = examSectionRepository
+                    .findFirstByExam_IdAndDisplayOrderGreaterThanOrderByDisplayOrderAsc
+                            (examAttempt.getExam().getId(),examSection.getDisplayOrder());
+
+            if (nextSection.isPresent()) {
+                ExamAttemptSection nextExamAttemptSection = examAttemptSectionRepository
+                        .findByExamAttempt_IdAndSection_Id(examAttempt.getId(),nextSection.get().getId())
+                        .orElseThrow(() -> new ResourceNotFoundException("khong tim thay phan thi"));
+
+                nextExamAttemptSection.setStatus(StatusSection.in_progress);
+                nextExamAttemptSection.setStartedAt(now);
+                examAttemptSectionRepository.save(nextExamAttemptSection);
+
+                ExamStartResponse examStartResponse = new ExamStartResponse();
+                examStartResponse.setAttemptId(examAttempt.getId());
+                examStartResponse.setResume(true);
+                examStartResponse.setActiveSectionId(nextSection.get().getId());
+                examStartResponse.setSavedAnswers(new HashMap<>());
+                examStartResponse.setRemainingTimeSeconds(nextSection.get().getDurationMinutes() * 60L);
+                return examStartResponse;
+            }
+            else {
+                examAttempt.setStatus(AttemptStatus.submitted);
+                examAttempt.setCompletedAt(endtime);
+                examAttemptRepository.save(examAttempt);
+
+                //ha châ điểm
+            }
+        }
 
         long time1 = Duration.between(attemptSection.getStartedAt(), now).getSeconds();
         long time2 = examSection.getDurationMinutes()*60L;

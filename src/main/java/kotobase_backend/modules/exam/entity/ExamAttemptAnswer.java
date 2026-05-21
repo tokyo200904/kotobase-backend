@@ -25,7 +25,7 @@ public class ExamAttemptAnswer {
     private BigDecimal pointsEarned;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "selected_answer_id", nullable = false)
+    @JoinColumn(name = "selected_answer_id", nullable = true)
     private Answer selectedAnswer;
 
     @ManyToOne(fetch = FetchType.LAZY)

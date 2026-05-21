@@ -11,6 +11,7 @@ import kotobase_backend.modules.exam.entity.*;
 import kotobase_backend.modules.exam.mapper.ExamAttemptMapper;
 import kotobase_backend.modules.exam.repository.*;
 import kotobase_backend.modules.exam.service.ExamAttemptService;
+import kotobase_backend.modules.exam.service.scoring.ScoringQueueService;
 import kotobase_backend.modules.user.entity.User;
 import kotobase_backend.modules.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -36,7 +37,7 @@ public class ExamAttemptServiceImpl implements ExamAttemptService {
     private final ExamAttemptSectionRepository examAttemptSectionRepository;
     private final ExamAttemptAnswerRepository examAttemptAnswerRepository;
     private final UserRepository userRepository;
-
+    private final ScoringQueueService scoringQueueService;
     //hàm lấy danh sách câu hỏi đáp án
     @Override
     public SectionResponse getSectionDetail(Long attemptId, Long sectionId, Integer currentUserId) {
@@ -85,6 +86,7 @@ public class ExamAttemptServiceImpl implements ExamAttemptService {
     }
 
     // hàm khi người dùng ấn hoàn thành phần thi
+    @Transactional
     @Override
     public SectionSubmitResponse submitSection(Long sectionId, Long attemptId, Integer userId) {
         LocalDateTime now = LocalDateTime.now();
@@ -139,7 +141,7 @@ public class ExamAttemptServiceImpl implements ExamAttemptService {
             examAttempt.setCompletedAt(now);
             examAttemptRepository.save(examAttempt);
 
-
+            scoringQueueService.calculateScoreBackground(attemptId);
 
             sectionSubmitResponse.setExamFinished(true);
             sectionSubmitResponse.setNextSectionId(null);
@@ -240,7 +242,7 @@ public class ExamAttemptServiceImpl implements ExamAttemptService {
                 examAttempt.setCompletedAt(endtime);
                 examAttemptRepository.save(examAttempt);
 
-                //ha châ điểm
+                scoringQueueService.calculateScoreBackground(examAttempt.getId());
             }
         }
 

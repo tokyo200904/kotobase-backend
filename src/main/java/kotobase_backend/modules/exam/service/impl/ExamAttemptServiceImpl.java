@@ -4,6 +4,7 @@ import kotobase_backend.comom.enums.AttemptStatus;
 import kotobase_backend.comom.enums.StatusSection;
 import kotobase_backend.comom.exceptions.CustomException.ForbiddenException;
 import kotobase_backend.comom.exceptions.CustomException.ResourceNotFoundException;
+import kotobase_backend.modules.exam.dto.request.AnswerSubmitRequest;
 import kotobase_backend.modules.exam.dto.response.ExamStartResponse;
 import kotobase_backend.modules.exam.dto.response.SectionResponse;
 import kotobase_backend.modules.exam.dto.response.SectionSubmitResponse;
@@ -20,10 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -38,6 +36,9 @@ public class ExamAttemptServiceImpl implements ExamAttemptService {
     private final ExamAttemptAnswerRepository examAttemptAnswerRepository;
     private final UserRepository userRepository;
     private final ScoringQueueService scoringQueueService;
+    private final QuestionRepository questionRepository;
+    private final AnswerRepository answerRepository;
+
     //hàm lấy danh sách câu hỏi đáp án
     @Override
     public SectionResponse getSectionDetail(Long attemptId, Long sectionId, Integer currentUserId) {
@@ -84,6 +85,63 @@ public class ExamAttemptServiceImpl implements ExamAttemptService {
                 .findByUser_IdAndExam_IdAndStatus(userId,examId,AttemptStatus.in_progress);
         return examAttempt.map(this::resumeExam).orElseGet(() -> newExam(userId, exam));
     }
+
+    @Transactional
+    @Override
+    public void aotuSaveAnswer(Long attemptId, List<AnswerSubmitRequest> inputs, Integer userId) {
+
+        ExamAttempt examAttempt = examAttemptRepository.findById(attemptId)
+                .orElseThrow(() -> new ResourceNotFoundException("khong tim thay luot thi"));
+        if (!examAttempt.getUser().getId().equals(userId)) {
+            throw new ResourceNotFoundException("Bạn không có quyền luu bài thi này");
+        }
+       if (examAttempt.getStatus() != AttemptStatus.in_progress) {
+           throw new ResourceNotFoundException("bài thi không ở trạng thái đang làm bài ");
+       }
+       if (inputs == null || inputs.isEmpty()) {
+           return ;
+       }
+
+       List<Long> questionIds = inputs.stream()
+               .map(AnswerSubmitRequest::getQuestionId)
+               .collect(Collectors.toList());
+
+       List<ExamAttemptAnswer> oldList = examAttemptAnswerRepository
+               .findByExamAttempt_IdAndQuestion_IdIn(attemptId, questionIds);
+
+       Map<Long,ExamAttemptAnswer> answerMap = oldList.stream()
+               .collect(Collectors.toMap(
+                       ans -> ans.getQuestion().getId(),
+                       ans -> ans
+               ));
+
+       List<ExamAttemptAnswer> saveAnswer = new ArrayList<>();
+
+       for (AnswerSubmitRequest input : inputs) {
+
+           ExamAttemptAnswer examAttemptAnswer;
+           if (answerMap.containsKey(input.getQuestionId())) {
+               examAttemptAnswer = answerMap.get(input.getQuestionId());
+           }
+           else {
+               examAttemptAnswer = new ExamAttemptAnswer();
+               examAttemptAnswer.setExamAttempt(examAttempt);
+               Question question = questionRepository.getReferenceById(input.getQuestionId());
+               examAttemptAnswer.setQuestion(question);
+           }
+           if (input.getSelectedAnswerId() != null) {
+               Answer answer = answerRepository.getReferenceById(input.getSelectedAnswerId());
+               examAttemptAnswer.setSelectedAnswer(answer);
+           }
+           else {
+               examAttemptAnswer.setSelectedAnswer(null);
+           }
+           saveAnswer.add(examAttemptAnswer);
+       }
+       examAttemptAnswerRepository.saveAll(saveAnswer);
+    }
+
+
 
     // hàm khi người dùng ấn hoàn thành phần thi
     @Transactional

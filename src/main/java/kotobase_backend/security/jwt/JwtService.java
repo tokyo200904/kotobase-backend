@@ -24,8 +24,9 @@ public class JwtService {
     @Value("${jwt.expiration}")
     private Long expiration;
 
-    public String genarateToken(UserDetails userDetails){
+    public String genarateToken(UserDetails userDetails, Integer userId){
         Map<String,Object> claims = new HashMap<>();
+        claims.put("id", userId);
         return createToken(claims,userDetails.getUsername());
     }
 
@@ -71,6 +72,14 @@ public class JwtService {
                 .setSigningKey(getSigningKey())
                 .build()
                 .parseClaimsJws(token).getBody();
+    }
+
+    public Boolean validateToken(String token){
+        try {
+            return !isTokenExpired(token);
+        } catch (Exception e) {
+            return false;
+        }
     }
 
     public Boolean validateToken(String token, UserDetails userDetails){

@@ -46,7 +46,7 @@ public class AuthServiceImpl implements AuthService {
             User user = userRepository.findByEmail(request.getEmail())
                     .orElseThrow(() -> new RuntimeException("email không tồn tại"));
             UserDetails userDetails = customUserDetailsService.loadUserByUsername(request.getEmail());
-            String token = jwtService.genarateToken(userDetails);
+            String token = jwtService.genarateToken(userDetails, user.getId());
 
             return AuthResponse.builder()
                     .token(token)
@@ -81,7 +81,7 @@ public class AuthServiceImpl implements AuthService {
         User savedUser = userRepository.save(user);
 
         CustomUserDetails customUserDetails = new CustomUserDetails(savedUser);
-        String token = jwtService.genarateToken(customUserDetails);
+        String token = jwtService.genarateToken(customUserDetails,savedUser.getId());
         return AuthResponse.builder()
                 .token(token)
 //                .userInfo(authMapper.mapToUserInfoResponse(savedUser))

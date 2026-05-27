@@ -2,6 +2,8 @@ package kotobase_backend.modules.user.entity;
 
 import jakarta.persistence.*;
 import kotobase_backend.comom.enums.AuthProvider;
+import kotobase_backend.modules.progress.entity.UserDailyActivity;
+import kotobase_backend.modules.progress.entity.UserItemProgress;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -9,6 +11,7 @@ import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Table(name = "users")
@@ -52,4 +55,9 @@ public class User {
     @JoinColumn(name = "role_id", nullable = true)
     private Role roleName;
 
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
+    private List<UserDailyActivity> userDailyActivities;
+
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
+    private List<UserItemProgress> userItemProgresses;
 }

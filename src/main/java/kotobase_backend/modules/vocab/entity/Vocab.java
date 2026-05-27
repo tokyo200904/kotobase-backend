@@ -2,7 +2,7 @@ package kotobase_backend.modules.vocab.entity;
 
 import jakarta.persistence.*;
 import kotobase_backend.modules.JlptLevel.entity.JlptLevel;
-import kotobase_backend.modules.audio.entity.Audio;
+import kotobase_backend.modules.exam.entity.Audio;
 import kotobase_backend.modules.examples.entity.ExampleVocab;
 import kotobase_backend.modules.vocabularyTopic.entity.VocabularyTopic;
 import lombok.AllArgsConstructor;

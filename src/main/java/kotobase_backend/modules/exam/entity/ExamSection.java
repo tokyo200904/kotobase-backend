@@ -23,6 +23,7 @@ public class ExamSection {
     @Column(name = "section_name", nullable = false)
     private String sectionName;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "section_type",nullable = false)
     private SectionType sectionType;
 
@@ -49,5 +50,6 @@ public class ExamSection {
     private List<ExamAttemptSection> examAttemptSections;
 
     @OneToMany(mappedBy = "section", cascade = CascadeType.ALL, orphanRemoval = true )
+    @OrderBy("displayOrder ASC")
     private List<QuestionGroups> questionGroups;
 }

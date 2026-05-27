@@ -1,9 +1,6 @@
-package kotobase_backend.modules.audio.entity;
-
+package kotobase_backend.modules.exam.entity;
 
 import jakarta.persistence.*;
-import kotobase_backend.modules.exam.entity.Question;
-import kotobase_backend.modules.exam.entity.QuestionGroups;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;

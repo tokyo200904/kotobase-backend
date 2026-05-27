@@ -13,4 +13,6 @@ public interface ExamAttemptSectionRepository extends JpaRepository<ExamAttemptS
     Optional<ExamAttemptSection> findByExamAttempt_IdAndSection_Id(Long attemptId, Long sectionId);
     Optional<ExamAttemptSection> findByExamAttempt_IdAndStatus(Long attemptId, StatusSection status);
     List<ExamAttemptSection> findByExamAttempt_Id(Long attemptId);
+    Optional<ExamAttemptSection> findFirstByExamAttempt_IdAndStatusOrderBySection_DisplayOrderAsc(Long attemptId, StatusSection status);
+    List<ExamAttemptSection> findByStatus(StatusSection status);
 }

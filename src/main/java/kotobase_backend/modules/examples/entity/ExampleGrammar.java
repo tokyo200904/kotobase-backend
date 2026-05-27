@@ -1,7 +1,7 @@
 package kotobase_backend.modules.examples.entity;
 
 import jakarta.persistence.*;
-import kotobase_backend.modules.audio.entity.Audio;
+import kotobase_backend.modules.exam.entity.Audio;
 import kotobase_backend.modules.grammar.entity.Grammar;
 import lombok.AllArgsConstructor;
 import lombok.Data;

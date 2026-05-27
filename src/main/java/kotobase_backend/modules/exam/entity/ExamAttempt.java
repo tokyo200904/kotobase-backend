@@ -31,6 +31,9 @@ public class ExamAttempt {
     @Column(name = "completed_at", nullable = false)
     private LocalDateTime completedAt;
 
+    @Column(name = "expire_at",nullable = false)
+    private LocalDateTime expireAt;
+
     @Column(name = "is_passed", nullable = false)
     private Boolean isPassed;
 

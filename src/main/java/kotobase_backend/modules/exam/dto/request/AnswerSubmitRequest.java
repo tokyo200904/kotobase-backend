@@ -8,4 +8,5 @@ public class AnswerSubmitRequest {
     @NotNull(message = "Question ID không được để trống")
     private Long questionId;
     private Long selectedAnswerId;
+    private Long attemptId;
 }

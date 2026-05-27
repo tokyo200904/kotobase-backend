@@ -3,7 +3,6 @@ package kotobase_backend.modules.exam.entity;
 
 import jakarta.persistence.*;
 import kotobase_backend.comom.enums.GroupType;
-import kotobase_backend.modules.audio.entity.Audio;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -44,6 +43,7 @@ public class QuestionGroups {
     private ExamSection section;
 
     @OneToMany(mappedBy = "questionGroup", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OrderBy("displayOrder ASC")
     private List<Question> questions;
 
 }

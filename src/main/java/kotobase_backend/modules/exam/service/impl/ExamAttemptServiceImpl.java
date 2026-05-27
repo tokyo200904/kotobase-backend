@@ -4,7 +4,10 @@ import kotobase_backend.comom.enums.AttemptStatus;
 import kotobase_backend.comom.enums.StatusSection;
 import kotobase_backend.comom.exceptions.CustomException.ForbiddenException;
 import kotobase_backend.comom.exceptions.CustomException.ResourceNotFoundException;
+import kotobase_backend.modules.exam.ExamAutosaveController;
+import kotobase_backend.modules.exam.component.ExamTimerManager;
 import kotobase_backend.modules.exam.dto.request.AnswerSubmitRequest;
+import kotobase_backend.modules.exam.dto.response.ExamResumeState;
 import kotobase_backend.modules.exam.dto.response.ExamStartResponse;
 import kotobase_backend.modules.exam.dto.response.SectionResponse;
 import kotobase_backend.modules.exam.dto.response.SectionSubmitResponse;
@@ -12,6 +15,8 @@ import kotobase_backend.modules.exam.entity.*;
 import kotobase_backend.modules.exam.mapper.ExamAttemptMapper;
 import kotobase_backend.modules.exam.repository.*;
 import kotobase_backend.modules.exam.service.ExamAttemptService;
+import kotobase_backend.modules.exam.service.ExamAutosaveService;
+import kotobase_backend.modules.exam.service.ExamTransitionService;
 import kotobase_backend.modules.exam.service.scoring.ScoringQueueService;
 import kotobase_backend.modules.user.entity.User;
 import kotobase_backend.modules.user.repository.UserRepository;
@@ -20,7 +25,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Duration;
+import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -38,6 +45,9 @@ public class ExamAttemptServiceImpl implements ExamAttemptService {
     private final ScoringQueueService scoringQueueService;
     private final QuestionRepository questionRepository;
     private final AnswerRepository answerRepository;
+    private final ExamTimerManager  examTimerManager;
+    private final ExamTransitionService  examTransitionService;
+    private final ExamAutosaveService examAutosaveService;
 
     //hàm lấy danh sách câu hỏi đáp án
     @Override
@@ -58,16 +68,28 @@ public class ExamAttemptServiceImpl implements ExamAttemptService {
         ExamAttemptSection attemptSection = examAttemptSectionRepository.findByExamAttempt_IdAndSection_Id(attemptId,sectionId)
                 .orElseThrow(() -> new ResourceNotFoundException("không tìm thấy dữ liệu phần thi của bai thi"));
 
-        if(attemptSection.getStatus() == StatusSection.locked){
-            throw new ForbiddenException("phan thi chưa được mở, hãy hoàn thành phần thi trước đó");
-        }
-
         if(attemptSection.getStatus() == StatusSection.completed){
-            throw new ForbiddenException("Phần thi này đã kết thúc không thể xem lại đề");
+            throw new ForbiddenException("Phần thi này đã kết thúc không thể xem lại ");
         }
-
         ExamSection examSection = examSectionRepository.getExamSectionBySectionId(sectionId)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy phần thi"));
+
+        if (attemptSection.getStatus() == StatusSection.locked){
+            attemptSection.setStatus(StatusSection.in_progress);
+            attemptSection.setStartedAt(LocalDateTime.now());
+            attemptSection = examAttemptSectionRepository.save(attemptSection);
+
+            Instant endTime = attemptSection.getStartedAt()
+                    .atZone(ZoneId.systemDefault()).toInstant()
+                    .plusSeconds(examSection.getDurationMinutes() * 60L);
+
+            Instant deadLine = attempt.getExpireAt().atZone(ZoneId.systemDefault()).toInstant();
+            if (endTime.isAfter(deadLine)) {
+                endTime = deadLine;
+            }
+            examTimerManager.scheduleForceSubmit(attemptId,sectionId,endTime
+            ,() -> examTransitionService.processSectionSubmit(attemptId,sectionId,true));
+        }
 
         return examAttemptMapper.toExamSectionResponse(examSection);
     }
@@ -85,116 +107,113 @@ public class ExamAttemptServiceImpl implements ExamAttemptService {
                 .findByUser_IdAndExam_IdAndStatus(userId,examId,AttemptStatus.in_progress);
         return examAttempt.map(this::resumeExam).orElseGet(() -> newExam(userId, exam));
     }
-
-    @Transactional
     @Override
-    public void aotuSaveAnswer(Long attemptId, List<AnswerSubmitRequest> inputs, Integer userId) {
+    public ExamResumeState getExamResumeState(Long attemptId, Integer userId) {
+        LocalDateTime now = LocalDateTime.now();
 
         ExamAttempt examAttempt = examAttemptRepository.findById(attemptId)
-                .orElseThrow(() -> new ResourceNotFoundException("khong tim thay luot thi"));
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy lượt thi"));
+
         if (!examAttempt.getUser().getId().equals(userId)) {
-            throw new ResourceNotFoundException("Bạn không có quyền luu bài thi này");
+            throw new ResourceNotFoundException("Bạn không có quyền truy cập lượt thi này");
         }
-       if (examAttempt.getStatus() != AttemptStatus.in_progress) {
-           throw new ResourceNotFoundException("bài thi không ở trạng thái đang làm bài ");
-       }
-       if (inputs == null || inputs.isEmpty()) {
-           return ;
-       }
+        if (examAttempt.getStatus() != AttemptStatus.in_progress) {
+            throw new RuntimeException("EXAM_ALREADY_FINISHED");
+        }
 
-       List<Long> questionIds = inputs.stream()
-               .map(AnswerSubmitRequest::getQuestionId)
-               .collect(Collectors.toList());
+        if (examAttempt.getExpireAt() != null && now.isAfter(examAttempt.getExpireAt())) {
+            examTransitionService.forceSubmitEntireExam(attemptId);
+            throw new RuntimeException("EXAM_TIME_UP_ABSOLUTE");
+        }
 
-       List<ExamAttemptAnswer> oldList = examAttemptAnswerRepository
-               .findByExamAttempt_IdAndQuestion_IdIn(attemptId, questionIds);
+        Optional<ExamAttemptSection> inProgressOpt = examAttemptSectionRepository
+                .findByExamAttempt_IdAndStatus(attemptId, StatusSection.in_progress);
 
-       Map<Long,ExamAttemptAnswer> answerMap = oldList.stream()
-               .collect(Collectors.toMap(
-                       ans -> ans.getQuestion().getId(),
-                       ans -> ans
-               ));
+        ExamAttemptSection targetAttemptSection;
+        long remainingTimeSeconds;
 
-       List<ExamAttemptAnswer> saveAnswer = new ArrayList<>();
+        if (inProgressOpt.isPresent()) {
+            targetAttemptSection = inProgressOpt.get();
+            long elapsedSeconds = Duration.between(targetAttemptSection.getStartedAt(), now).getSeconds();
+            long totalSeconds = targetAttemptSection.getSection().getDurationMinutes() * 60L;
+            remainingTimeSeconds = totalSeconds - elapsedSeconds;
 
-       for (AnswerSubmitRequest input : inputs) {
-
-           ExamAttemptAnswer examAttemptAnswer;
-           if (answerMap.containsKey(input.getQuestionId())) {
-               examAttemptAnswer = answerMap.get(input.getQuestionId());
-           }
-           else {
-               examAttemptAnswer = new ExamAttemptAnswer();
-               examAttemptAnswer.setExamAttempt(examAttempt);
-               Question question = questionRepository.getReferenceById(input.getQuestionId());
-               examAttemptAnswer.setQuestion(question);
-           }
-           if (input.getSelectedAnswerId() != null) {
-               Answer answer = answerRepository.getReferenceById(input.getSelectedAnswerId());
-               examAttemptAnswer.setSelectedAnswer(answer);
-           }
-           else {
-               examAttemptAnswer.setSelectedAnswer(null);
-           }
-           saveAnswer.add(examAttemptAnswer);
-       }
-       examAttemptAnswerRepository.saveAll(saveAnswer);
+            if (remainingTimeSeconds <= 0) {
+                examTransitionService.processSectionSubmit(attemptId, targetAttemptSection.getSection().getId(), true);
+                throw new RuntimeException("SECTION_TIME_UP_REFRESH_AGAIN");
+            }
+        } else {
+            targetAttemptSection = examAttemptSectionRepository
+                    .findFirstByExamAttempt_IdAndStatusOrderBySection_DisplayOrderAsc(attemptId, StatusSection.locked)
+                    .orElseThrow(() -> {
+                        examTransitionService.forceSubmitEntireExam(attemptId);
+                        return new RuntimeException("EXAM_ALREADY_FINISHED");
+                    });
+            remainingTimeSeconds = targetAttemptSection.getSection().getDurationMinutes() * 60L;
+        }
+        ExamSection targetSection = targetAttemptSection.getSection();
+        List<ExamAttemptAnswer> examAttemptAnswers = examAttemptAnswerRepository.findByExamAttempt_Id(attemptId);
+        Map<Long, Long> answerMap = examAttemptAnswers.stream()
+                .filter(a -> a.getSelectedAnswer() != null)
+                .collect(Collectors.toMap(
+                        a -> a.getQuestion().getId(),
+                        a -> a.getSelectedAnswer().getId()
+                ));
+        ExamResumeState state = new ExamResumeState();
+        state.setAttemptId(attemptId);
+        state.setNameSession(targetSection.getSectionName());
+        state.setSessionId(targetSection.getId());
+        state.setRemainingTime(remainingTimeSeconds);
+        state.setSavedAnswers(answerMap);
+        return state;
     }
 
-
-
-    // hàm khi người dùng ấn hoàn thành phần thi
     @Transactional
     @Override
     public SectionSubmitResponse submitSection(Long sectionId, Long attemptId, Integer userId) {
         LocalDateTime now = LocalDateTime.now();
 
         ExamAttempt examAttempt = examAttemptRepository.findById(attemptId)
-                .orElseThrow(() -> new ResourceNotFoundException("khong tim thay luot thi"));
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy lượt thi"));
 
-        if (examAttempt.getUser().getId().equals(userId)) {
-            throw new ResourceNotFoundException("ban khong co quyen thao tac");
+        if (!examAttempt.getUser().getId().equals(userId)) {
+            throw new ResourceNotFoundException("Bạn không có quyền thao tác trên bài thi này");
         }
         if (examAttempt.getStatus() != AttemptStatus.in_progress) {
-            throw new ResourceNotFoundException("bai thi nay da huy ban khong co quyen thao tac");
+            throw new ResourceNotFoundException("Bài thi này đã kết thúc hoặc bị hủy");
         }
 
-        ExamAttemptSection attemptSection = examAttemptSectionRepository.findByExamAttempt_IdAndSection_Id(attemptId,sectionId)
-                .orElseThrow(() -> new ResourceNotFoundException("khong tim thay phan thi"));
+        ExamAttemptSection attemptSection = examAttemptSectionRepository.findByExamAttempt_IdAndSection_Id(attemptId, sectionId)
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy phần thi"));
 
         if (attemptSection.getStatus() == StatusSection.completed){
-            throw new ResourceNotFoundException("phan thi nay da duoc nop");
+            throw new ResourceNotFoundException("Phần thi này đã được nộp");
         }
+
+        examAutosaveService.flushSingleAttempt(attemptId);
+        examTimerManager.cancelTimer(attemptId, sectionId);
 
         attemptSection.setStatus(StatusSection.completed);
         attemptSection.setCompletedAt(now);
         examAttemptSectionRepository.save(attemptSection);
 
-        ExamSection sectionInfo = examSectionRepository.findById(sectionId)
-                .orElseThrow(() -> new ResourceNotFoundException("khong tim thay phan thi thi"));
-
+        ExamSection sectionInfo = attemptSection.getSection();
         int disPlayOrder = sectionInfo.getDisplayOrder();
 
-        Optional<ExamSection> examSection = examSectionRepository
+        Optional<ExamSection> nextExamSectionOpt = examSectionRepository
                 .findFirstByExam_IdAndDisplayOrderGreaterThanOrderByDisplayOrderAsc(sectionInfo.getExam().getId(), disPlayOrder);
 
         SectionSubmitResponse sectionSubmitResponse = new SectionSubmitResponse();
 
-        if (examSection.isPresent()) {
-            ExamSection nextExamSection = examSection.get();
-
-            ExamAttemptSection nextAttemptSection = examAttemptSectionRepository
-                    .findByExamAttempt_IdAndSection_Id(attemptId,nextExamSection.getId())
-                    .orElseThrow(() -> new ResourceNotFoundException("khong tim thay phan thi"));
-
-            nextAttemptSection.setStartedAt(now);
-            nextAttemptSection.setStatus(StatusSection.in_progress);
-            examAttemptSectionRepository.save(nextAttemptSection);
+        if (nextExamSectionOpt.isPresent()) {
+            ExamSection nextExamSection = nextExamSectionOpt.get();
 
             sectionSubmitResponse.setExamFinished(false);
             sectionSubmitResponse.setNextSectionId(nextExamSection.getId());
-        }
-        else {
+
+        } else {
+            examTimerManager.cancelMasterTimer(attemptId);
+
             examAttempt.setStatus(AttemptStatus.submitted);
             examAttempt.setCompletedAt(now);
             examAttemptRepository.save(examAttempt);
@@ -209,22 +228,33 @@ public class ExamAttemptServiceImpl implements ExamAttemptService {
     }
 
 
-
     private ExamStartResponse newExam(Integer userId, Exam exam) {
         LocalDateTime now = LocalDateTime.now();
 
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("khong tim thay user"));
+
+        List<ExamSection> ExamSections = examSectionRepository.findByExam_IdOrderByDisplayOrderAsc(exam.getId());
+        if (ExamSections.isEmpty())
+            throw new ResourceNotFoundException("đề thi bị lỗi cấu trúc không có phần thi");
+
+        int totalExamMinutes = ExamSections.stream().mapToInt(ExamSection::getDurationMinutes).sum();
+        LocalDateTime timeAt = now.plusMinutes(totalExamMinutes);
+
         ExamAttempt newExamAttempt = new ExamAttempt();
         newExamAttempt.setExam(exam);
         newExamAttempt.setUser(user);
         newExamAttempt.setStatus(AttemptStatus.in_progress);
         newExamAttempt.setStartedAt(now);
+        newExamAttempt.setExpireAt(timeAt);
         newExamAttempt = examAttemptRepository.save(newExamAttempt);
 
-        List<ExamSection> ExamSections = examSectionRepository.findByExam_IdOrderByDisplayOrderAsc(exam.getId());
-        if (ExamSections.isEmpty())
-            throw new ResourceNotFoundException("đề thi bị lỗi cấu trúc không có phần thi");
+        final long attemptId = newExamAttempt.getId();
+        examTimerManager.scheduleMasterTimer(
+                attemptId,
+                timeAt.atZone(ZoneId.systemDefault()).toInstant(),
+                () -> examTransitionService.forceSubmitEntireExam(attemptId)
+        );
 
         ExamAttemptSection firstSection = null;
 
@@ -233,23 +263,18 @@ public class ExamAttemptServiceImpl implements ExamAttemptService {
             ExamAttemptSection examAttemptSection = new ExamAttemptSection();
             examAttemptSection.setSection(examSections);
             examAttemptSection.setExamAttempt(newExamAttempt);
-
+            examAttemptSection.setStatus(StatusSection.locked);
+            examAttemptSectionRepository.save(examAttemptSection);
             if (i == 0) {
-                examAttemptSection.setStartedAt(now);
-                examAttemptSection.setStatus(StatusSection.in_progress);
-                firstSection = examAttemptSectionRepository.save(examAttemptSection);
-            } else {
-                examAttemptSection.setStatus(StatusSection.locked);
-                examAttemptSectionRepository.save(examAttemptSection);
+                firstSection =  examAttemptSection;
             }
         }
             ExamStartResponse examStartResponse = new ExamStartResponse();
-            examStartResponse.setAttemptId(newExamAttempt.getId());
+            examStartResponse.setAttemptId(attemptId);
             examStartResponse.setResume(false);
             examStartResponse.setActiveSectionId(firstSection.getSection().getId());
 
-            int time = ExamSections.get(0).getDurationMinutes();
-            examStartResponse.setRemainingTimeSeconds(time * 60L);
+            examStartResponse.setRemainingTimeSeconds(firstSection.getSection().getDurationMinutes());
             examStartResponse.setSavedAnswers(new HashMap<>());
 
         return examStartResponse;
@@ -258,58 +283,33 @@ public class ExamAttemptServiceImpl implements ExamAttemptService {
     private ExamStartResponse resumeExam(ExamAttempt examAttempt) {
         LocalDateTime now = LocalDateTime.now();
 
-        ExamAttemptSection attemptSection = examAttemptSectionRepository.findByExamAttempt_IdAndStatus(examAttempt.getId(), StatusSection.in_progress)
-                .orElseThrow(() -> new ResourceNotFoundException("phan thi bi loi trang thai "));
-
-        ExamSection examSection = examSectionRepository.findById(attemptSection.getSection().getId())
-                .orElseThrow(() -> new ResourceNotFoundException("khong tim thay bai thi"));
-
-        long timeResume = Duration.between(attemptSection.getStartedAt(), now).getSeconds();
-        long timeSection = examSection.getDurationMinutes() * 60L;
-
-        if (timeResume > timeSection) {
-            LocalDateTime endtime = attemptSection.getStartedAt().plusMinutes(examSection.getDurationMinutes());
-
-            attemptSection.setStatus(StatusSection.completed);
-            attemptSection.setCompletedAt(endtime);
-            examAttemptSectionRepository.save(attemptSection);
-
-            Optional<ExamSection> nextSection = examSectionRepository
-                    .findFirstByExam_IdAndDisplayOrderGreaterThanOrderByDisplayOrderAsc
-                            (examAttempt.getExam().getId(),examSection.getDisplayOrder());
-
-            if (nextSection.isPresent()) {
-                ExamAttemptSection nextExamAttemptSection = examAttemptSectionRepository
-                        .findByExamAttempt_IdAndSection_Id(examAttempt.getId(),nextSection.get().getId())
-                        .orElseThrow(() -> new ResourceNotFoundException("khong tim thay phan thi"));
-
-                nextExamAttemptSection.setStatus(StatusSection.in_progress);
-                nextExamAttemptSection.setStartedAt(now);
-                examAttemptSectionRepository.save(nextExamAttemptSection);
-
-                ExamStartResponse examStartResponse = new ExamStartResponse();
-                examStartResponse.setAttemptId(examAttempt.getId());
-                examStartResponse.setResume(true);
-                examStartResponse.setActiveSectionId(nextSection.get().getId());
-                examStartResponse.setSavedAnswers(new HashMap<>());
-                examStartResponse.setRemainingTimeSeconds(nextSection.get().getDurationMinutes() * 60L);
-                return examStartResponse;
-            }
-            else {
-                examAttempt.setStatus(AttemptStatus.submitted);
-                examAttempt.setCompletedAt(endtime);
-                examAttemptRepository.save(examAttempt);
-
-                scoringQueueService.calculateScoreBackground(examAttempt.getId());
-            }
+        if (examAttempt.getExpireAt() != null && now.isAfter(examAttempt.getExpireAt())) {
+            examTransitionService.forceSubmitEntireExam(examAttempt.getId());
+            throw new RuntimeException("het thoi gian");
         }
 
-        long time1 = Duration.between(attemptSection.getStartedAt(), now).getSeconds();
-        long time2 = examSection.getDurationMinutes()*60L;
-        long time3 = time2 - time1;
+        Optional<ExamAttemptSection> inProgressOpt = examAttemptSectionRepository
+                .findByExamAttempt_IdAndStatus(examAttempt.getId(), StatusSection.in_progress);
 
-        if (time3 <= 0){
-            throw new RuntimeException("da het gio");
+        ExamAttemptSection targetSecsion;
+        long remainingTimeSeconds;
+        if (inProgressOpt.isPresent()) {
+            targetSecsion = inProgressOpt.get();
+            long time1 = Duration.between(targetSecsion.getStartedAt(), now).getSeconds();
+            long time2 = targetSecsion.getSection().getDurationMinutes()*60L;
+            remainingTimeSeconds = time2 - time1;
+            if (remainingTimeSeconds < 0) {
+                examTransitionService.processSectionSubmit(examAttempt.getId(), targetSecsion.getSection().getId(),true);
+                throw new ResourceNotFoundException("het thoi gian");
+            }
+        } else{
+            targetSecsion = examAttemptSectionRepository
+                    .findFirstByExamAttempt_IdAndStatusOrderBySection_DisplayOrderAsc(examAttempt.getId(), StatusSection.locked)
+                    .orElseThrow(() -> {
+                        examTransitionService.forceSubmitEntireExam(examAttempt.getId());
+                        return new RuntimeException("bai thi da ket thuc");
+                    });
+            remainingTimeSeconds = targetSecsion.getSection().getDurationMinutes()*60L;
         }
         List<ExamAttemptAnswer> attemptAnswers = examAttemptAnswerRepository.findByExamAttempt_Id(examAttempt.getId());
         Map<Long ,Long> answers = attemptAnswers.stream()
@@ -322,8 +322,8 @@ public class ExamAttemptServiceImpl implements ExamAttemptService {
         ExamStartResponse examStartResponse = new ExamStartResponse();
         examStartResponse.setAttemptId(examAttempt.getId());
         examStartResponse.setResume(true);
-        examStartResponse.setActiveSectionId(attemptSection.getSection().getId());
-        examStartResponse.setRemainingTimeSeconds(time3);
+        examStartResponse.setActiveSectionId(targetSecsion.getSection().getId());
+        examStartResponse.setRemainingTimeSeconds(remainingTimeSeconds);
         examStartResponse.setSavedAnswers(answers);
 
         return examStartResponse;

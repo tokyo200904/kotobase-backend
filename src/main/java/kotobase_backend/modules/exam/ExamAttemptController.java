@@ -1,5 +1,6 @@
 package kotobase_backend.modules.exam;
 
+import kotobase_backend.modules.exam.dto.response.ExamResumeState;
 import kotobase_backend.modules.exam.dto.response.ExamStartResponse;
 import kotobase_backend.modules.exam.dto.response.SectionResponse;
 import kotobase_backend.modules.exam.dto.response.SectionSubmitResponse;
@@ -39,4 +40,12 @@ public class ExamAttemptController {
         Integer userId = userDetails.getUserId();
         return ResponseEntity.ok(examAttemptService.submitSection( sectionId, attemptId, userId));
     }
+
+    @GetMapping("/{attemptId}/resume")
+    public ResponseEntity<ExamResumeState> resumeExamF5(@PathVariable Long attemptId,
+                                                        @AuthenticationPrincipal CustomUserDetails userDetails){
+        Integer userId = userDetails.getUserId();
+        return ResponseEntity.ok(examAttemptService.getExamResumeState(attemptId, userId));
+    }
+
 }

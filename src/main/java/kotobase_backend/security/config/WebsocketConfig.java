@@ -21,7 +21,7 @@ import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerCo
 @RequiredArgsConstructor
 public class WebsocketConfig implements WebSocketMessageBrokerConfigurer {
 
-    private JwtService jwtService;
+    private final JwtService jwtService;
 
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {

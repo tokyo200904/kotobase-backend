@@ -27,8 +27,8 @@ public class ExamAttemptMapper {
         q.setContent(question.getContent());
         q.setPoints(question.getPoint());
         q.setDisplayOrder(question.getDisplayOrder());
-        q.setAudioUrl(question.getAudio().getUrl());
-        q.setImageUrl(question.getImage().getImageUrl());
+        if (question.getAudio() != null) {q.setAudioUrl(question.getAudio().getUrl());}
+        if (question.getImage() != null) {q.setImageUrl(question.getImage().getImageUrl());}
         q.setAnswers(aw);
         return q;
     }
@@ -45,8 +45,8 @@ public class ExamAttemptMapper {
         qg.setContent(questionGroups.getContent());
         qg.setDisplayOrder(questionGroups.getDisplayOrder());
         qg.setGroupType(questionGroups.getGroupType());
-        qg.setAudioUrl(questionGroups.getAudio().getUrl());
-        qg.setImageUrl(questionGroups.getImage().getImageUrl());
+        if (questionGroups.getAudio() != null) {qg.setAudioUrl(questionGroups.getAudio().getUrl());}
+        if (questionGroups.getImage() != null) {qg.setImageUrl(questionGroups.getImage().getImageUrl());}
         qg.setQuestions(q);
         return qg;
     }

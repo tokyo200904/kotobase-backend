@@ -15,10 +15,8 @@ public interface ExamSectionRepository extends JpaRepository<ExamSection, Long> 
     @Query("select distinct s " +
             "from ExamSection s " +
             "left join fetch s.questionGroups qg " +
-            "left join fetch qg.questions q " +
-            "left join fetch q.answers a " +
             "where s.id = :sectionId " +
-            "order by qg.displayOrder, q.displayOrder, a.displayOrder ")
+            "order by qg.displayOrder ")
     Optional<ExamSection> getExamSectionBySectionId(@Param("sectionId") Long sectionId);
 
     List<ExamSection> findByExam_IdOrderByDisplayOrderAsc(Long examId);

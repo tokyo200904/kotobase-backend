@@ -23,6 +23,8 @@ import kotobase_backend.modules.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -220,7 +222,12 @@ public class ExamAttemptServiceImpl implements ExamAttemptService {
             examAttempt.setCompletedAt(now);
             examAttemptRepository.save(examAttempt);
 
-            scoringQueueService.calculateScoreBackground(attemptId);
+            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+                @Override
+                public void afterCommit() {
+                    scoringQueueService.calculateScoreBackground(attemptId);
+                }
+            });
 
             sectionSubmitResponse.setExamFinished(true);
             sectionSubmitResponse.setNextSectionId(null);

@@ -3,6 +3,8 @@ package kotobase_backend.modules.exam.repository;
 import kotobase_backend.comom.enums.StatusSection;
 import kotobase_backend.modules.exam.entity.ExamAttemptSection;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -15,4 +17,16 @@ public interface ExamAttemptSectionRepository extends JpaRepository<ExamAttemptS
     List<ExamAttemptSection> findByExamAttempt_Id(Long attemptId);
     Optional<ExamAttemptSection> findFirstByExamAttempt_IdAndStatusOrderBySection_DisplayOrderAsc(Long attemptId, StatusSection status);
     List<ExamAttemptSection> findByStatus(StatusSection status);
+
+    @Query("SELECT eas FROM ExamAttemptSection eas " +
+            "JOIN FETCH eas.section " +
+            "WHERE eas.examAttempt.id = :attemptId")
+    List<ExamAttemptSection> findByExamAttempt_IdWithSection(@Param("attemptId") Long attemptId);
+
+    @Query("SELECT eas FROM ExamAttemptSection eas " +
+            "JOIN FETCH eas.examAttempt ea " +
+            "JOIN FETCH eas.section s " +
+            "WHERE eas.status = :status")
+    List<ExamAttemptSection> findByStatusWithAttemptAndSection(
+            @Param("status") StatusSection status);
 }

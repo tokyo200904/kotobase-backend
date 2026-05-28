@@ -1,9 +1,7 @@
 package kotobase_backend.modules.exam.service.impl;
 
-import jakarta.transaction.Transactional;
 import kotobase_backend.comom.enums.AttemptStatus;
 import kotobase_backend.comom.enums.StatusSection;
-import kotobase_backend.modules.exam.ExamAutosaveController;
 import kotobase_backend.modules.exam.component.ExamTimerManager;
 import kotobase_backend.modules.exam.dto.response.ExamWebSocketPayload;
 import kotobase_backend.modules.exam.entity.ExamAttempt;
@@ -18,6 +16,10 @@ import kotobase_backend.modules.exam.service.scoring.ScoringQueueService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
@@ -33,7 +35,7 @@ public class ExamTransitionServiceImpl implements ExamTransitionService {
     private final ExamSectionRepository sectionRepository;
     private final ScoringQueueService scoringQueueService;
 
-    @Transactional
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     @Override
     public void processSectionSubmit(Long attemptId, Long currentSectionId, boolean isForceSubmit) {
         ExamAttempt attempt = attemptRepository.findById(attemptId)
@@ -78,7 +80,12 @@ public class ExamTransitionServiceImpl implements ExamTransitionService {
 
             timerManager.cancelMasterTimer(attemptId);
 
-            scoringQueueService.calculateScoreBackground(attemptId);
+            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+                @Override
+                public void afterCommit() {
+                    scoringQueueService.calculateScoreBackground(attemptId);
+                }
+            });
 
             payload.setAction("FINISHED");
             payload.setMessage("Bài thi đã kết thúc!");
@@ -87,7 +94,7 @@ public class ExamTransitionServiceImpl implements ExamTransitionService {
         messagingTemplate.convertAndSend("/topic/exam/" + attemptId, payload);
     }
 
-    @Transactional
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void forceSubmitEntireExam(Long attemptId) {
         ExamAttempt attempt = attemptRepository.findById(attemptId).orElseThrow();
         if (attempt.getStatus() == AttemptStatus.submitted) return;

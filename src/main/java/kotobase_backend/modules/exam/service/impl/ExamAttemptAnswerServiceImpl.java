@@ -12,6 +12,7 @@ import kotobase_backend.modules.exam.repository.ExamAttemptRepository;
 import kotobase_backend.modules.exam.repository.QuestionRepository;
 import kotobase_backend.modules.exam.service.ExamAttemptAnswerService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
@@ -19,6 +20,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ExamAttemptAnswerServiceImpl implements ExamAttemptAnswerService {
@@ -36,7 +38,8 @@ public class ExamAttemptAnswerServiceImpl implements ExamAttemptAnswerService {
                 .orElseThrow(() -> new ResourceNotFoundException("khong tim thay luot thi"));
 
         if (examAttempt.getStatus() != AttemptStatus.in_progress) {
-            throw new ResourceNotFoundException("bài thi đã hoàn thành");
+            log.warn("Attempt {} đã kết thúc, bỏ qua autosave", attemptId);
+            return;
         }
 
         if (answersRam == null || answersRam.isEmpty()) {

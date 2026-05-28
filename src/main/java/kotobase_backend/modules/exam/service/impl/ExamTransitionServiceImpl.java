@@ -25,13 +25,13 @@ import java.util.Optional;
 @Service
 @RequiredArgsConstructor
 public class ExamTransitionServiceImpl implements ExamTransitionService {
-    private ExamTimerManager timerManager;
-    private SimpMessagingTemplate messagingTemplate;
-    private ExamAutosaveService autosaveService;
-    private ExamAttemptRepository attemptRepository;
-    private ExamAttemptSectionRepository attemptSectionRepository;
-    private ExamSectionRepository sectionRepository;
-    private ScoringQueueService scoringQueueService;
+    private final ExamTimerManager timerManager;
+    private final SimpMessagingTemplate messagingTemplate;
+    private final ExamAutosaveService autosaveService;
+    private final ExamAttemptRepository attemptRepository;
+    private final ExamAttemptSectionRepository attemptSectionRepository;
+    private final ExamSectionRepository sectionRepository;
+    private final ScoringQueueService scoringQueueService;
 
     @Transactional
     @Override

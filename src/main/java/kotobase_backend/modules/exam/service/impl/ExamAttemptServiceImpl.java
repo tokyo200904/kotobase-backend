@@ -149,6 +149,8 @@ public class ExamAttemptServiceImpl implements ExamAttemptService {
                         examTransitionService.forceSubmitEntireExam(attemptId);
                         return new RuntimeException("EXAM_ALREADY_FINISHED");
                     });
+
+
             remainingTimeSeconds = targetAttemptSection.getSection().getDurationMinutes() * 60L;
         }
         ExamSection targetSection = targetAttemptSection.getSection();

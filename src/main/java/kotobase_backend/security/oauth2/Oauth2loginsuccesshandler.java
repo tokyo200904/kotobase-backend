@@ -5,6 +5,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import kotobase_backend.modules.user.entity.User;
 import kotobase_backend.modules.user.repository.UserRepository;
 import kotobase_backend.security.jwt.JwtService;
+import kotobase_backend.security.userdetail.CustomUserDetails;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import lombok.extern.slf4j.Slf4j;
@@ -46,8 +47,9 @@ public class Oauth2loginsuccesshandler extends SimpleUrlAuthenticationSuccessHan
         if(Boolean.FALSE.equals(user.getIsEnabled())){
             throw new RuntimeException("tài khoản đã bị ban");
         }
-        String token = jwtService.genarateToken(email);
 
+        CustomUserDetails customUserDetails = new CustomUserDetails(user);
+        String token = jwtService.genarateToken(customUserDetails, user.getId());
 
         String targetUrl = UriComponentsBuilder.fromUriString(redirectUri)
                 .queryParam("token", token)

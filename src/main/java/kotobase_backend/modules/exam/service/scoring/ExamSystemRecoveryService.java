@@ -50,7 +50,7 @@ public class ExamSystemRecoveryService {
                     .plusSeconds(masterSection.getDurationMinutes() * 60L);
 
             Runnable forceSubmitTask = () -> {
-                transitionService.processSectionSubmit(section.getExamAttempt().getId(), section.getExamAttempt().getId(), true);
+                transitionService.processSectionSubmit(section.getExamAttempt().getId(), section.getSection().getId(), true);
             };
 
             if (exactEndTime.isBefore(now)) {

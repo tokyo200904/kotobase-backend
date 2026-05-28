@@ -7,7 +7,7 @@ import java.math.BigDecimal;
 
 @Data
 public class SectionResult {
-    private String setionId;
+    private Long setionId;
     private String setionName;
     private Boolean isPass;
     private SectionType sectionType;

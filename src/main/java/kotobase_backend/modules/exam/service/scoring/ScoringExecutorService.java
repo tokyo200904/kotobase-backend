@@ -55,7 +55,7 @@ public class ScoringExecutorService {
 
             if (userAnswers.getSelectedAnswer() != null) {
                 Answer answer = answerRepository.findById(userAnswers.getSelectedAnswer().getId()).orElse(null);
-                if (answer != null && answer.isCorrect()) {
+                if (answer != null && answer.getIsCorrect()) {
                     isCorret = true;
                     score = question.getPoint();
                 }

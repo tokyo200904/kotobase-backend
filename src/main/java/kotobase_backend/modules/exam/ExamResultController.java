@@ -1,6 +1,7 @@
 package kotobase_backend.modules.exam;
 
 import kotobase_backend.modules.exam.dto.response.ExamResult;
+import kotobase_backend.modules.exam.dto.response.ExamReviewResponse;
 import kotobase_backend.modules.exam.service.ExamResultService;
 import kotobase_backend.security.userdetail.CustomUserDetails;
 import lombok.RequiredArgsConstructor;
@@ -17,8 +18,15 @@ public class ExamResultController {
 
     @GetMapping("/{attemptId}")
     public ResponseEntity<ExamResult> getExamResult(@PathVariable Long attemptId,
-                                                   @AuthenticationPrincipal CustomUserDetails userDetails) {
+                                                    @AuthenticationPrincipal CustomUserDetails userDetails) {
         Integer userId = userDetails.getUserId();
         return ResponseEntity.ok(examResultService.getExamResult(attemptId, userId));
+    }
+
+    @GetMapping("/{attemptId}/details")
+    public ResponseEntity<ExamReviewResponse> getExamReviewDetails(@PathVariable Long attemptId,
+                                                                   @AuthenticationPrincipal CustomUserDetails userDetails) {
+        Integer userId = userDetails.getUserId();
+        return ResponseEntity.ok(examResultService.getExamReviewDetails(attemptId, userId));
     }
 }

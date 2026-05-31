@@ -22,10 +22,13 @@ public class Answer {
     private String content;
 
     @Column(name = "is_correct", nullable = false)
-    private boolean isCorrect;
+    private Boolean isCorrect;
 
     @Column(name = "display_order", nullable = false)
     private int displayOrder;
+
+    @Column(name = "explanation", columnDefinition = "TEXT")
+    private String explanation;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "question_id", nullable = false)

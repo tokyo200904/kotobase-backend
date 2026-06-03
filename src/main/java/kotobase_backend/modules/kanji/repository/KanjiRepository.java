@@ -24,4 +24,9 @@ public interface KanjiRepository extends JpaRepository<Kanji, Integer> {
             "or k.meaning like :key% " +
             "or k.han like :key% ")
     public List<Kanji> findKanji(@Param("key")  String key);
+
+    @Query(value = "SELECT * FROM kanjis k " +
+            "WHERE k.level_id = :levelId AND k.id != :correctId " +
+            "ORDER BY RAND() LIMIT 3", nativeQuery = true)
+    List<Kanji> findRandomDistractors(@Param("levelId") Integer levelId, @Param("correctId") Integer correctId);
 }

@@ -1,5 +1,6 @@
 package kotobase_backend.modules.kanji.service.impl;
 
+import kotobase_backend.comom.enums.ItemType;
 import kotobase_backend.comom.enums.KanjiType;
 import kotobase_backend.comom.enums.Level;
 import kotobase_backend.comom.exceptions.CustomException.ResourceNotFoundException;
@@ -11,6 +12,7 @@ import kotobase_backend.modules.kanji.entity.Kanji;
 import kotobase_backend.modules.kanji.mapper.KanjiMapper;
 import kotobase_backend.modules.kanji.repository.KanjiRepository;
 import kotobase_backend.modules.kanji.service.KanjiService;
+import kotobase_backend.modules.progress.repository.UserItemProgressRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -24,6 +26,7 @@ public class kanjiServiceImpl implements KanjiService {
 
     private final KanjiRepository kanjiRepository;
     private final KanjiMapper kanjiMapper;
+    private final UserItemProgressRepository userItemProgressRepository;
 
     @Override
     public List<KanjisResponse> getKanji(Level level) {
@@ -34,7 +37,7 @@ public class kanjiServiceImpl implements KanjiService {
     }
 
     @Override
-    public KanjiDetelResponse getKanjiDetel(Integer id) {
+    public KanjiDetelResponse getKanjiDetel(Integer id, Integer userId) {
         Kanji kanji = kanjiRepository.getKanjiByID(id)
                 .orElseThrow(() -> new ResourceNotFoundException("không tìm thấy kanji "));
 
@@ -48,7 +51,12 @@ public class kanjiServiceImpl implements KanjiService {
                 .map(o -> new KanjiReadingResponse(o.getReading(),o.getRomaji()))
                 .toList();
 
-        return kanjiMapper.toDetelResponse(kanji, onKanji, kunKanji);
+        boolean isSaved = false;
+        if (userId != null) {
+            isSaved = userItemProgressRepository.existsByUserIdAndItemIdAndItemType(userId, id, ItemType.KANJI);
+        }
+
+        return kanjiMapper.toDetelResponse(kanji, onKanji, kunKanji, isSaved);
     }
 
     @Override

@@ -1,6 +1,8 @@
 package kotobase_backend.modules.vocab.service.impl;
 
+import kotobase_backend.comom.enums.ItemType;
 import kotobase_backend.comom.exceptions.CustomException.ResourceNotFoundException;
+import kotobase_backend.modules.progress.repository.UserItemProgressRepository;
 import kotobase_backend.modules.topic.repository.TopicRepository;
 import kotobase_backend.modules.vocab.dto.request.VocabRequest;
 import kotobase_backend.modules.vocab.dto.response.PageVocabResponse;
@@ -15,6 +17,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -24,9 +27,10 @@ public class VocabServiceImpl implements VocabService {
     private final VocabRepository vocabRepository;
     private final VocabMapper vocabMapper;
     private final TopicRepository topicRepository;
+    private final UserItemProgressRepository userItemProgressRepository;
 
     @Override
-    public PageVocabResponse<VocabResponse> getAllVocabs(VocabRequest request) {
+    public PageVocabResponse<VocabResponse> getAllVocabs(VocabRequest request, Integer userId) {
 
         boolean check = topicRepository.existsById(request.getTopicId());
         if(!check){
@@ -40,9 +44,20 @@ public class VocabServiceImpl implements VocabService {
 
             Page<Vocab> pageVocab = vocabRepository.findByTopicId(request.getTopicId(), pageable);
 
-            List<VocabResponse> data = pageVocab.getContent().stream()
-                    .map(vocabMapper::mapToVocab)
-                    .toList();
+        final List<Integer> savedVocabIds;
+        if (userId!= null) {
+            savedVocabIds = userItemProgressRepository.findSavedItemIds(userId, ItemType.VOCAB);
+        }
+        else {
+            savedVocabIds = new ArrayList<>();
+        }
+
+        List<VocabResponse> data = pageVocab.getContent().stream()
+                .map(vocab -> {
+                    boolean isSaved = savedVocabIds.contains(vocab.getId());
+                    return vocabMapper.mapToVocab(vocab, isSaved);
+                })
+                .toList();
 
         PageVocabResponse<VocabResponse> res = new PageVocabResponse<>();
         res.setData(data);
@@ -53,10 +68,10 @@ public class VocabServiceImpl implements VocabService {
         return res;
     }
 
-    @Override
-    public VocabResponse getVocabById(Integer id) {
-        Vocab newvocab = vocabRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("khong tim thay tu vung"));
-        return vocabMapper.mapToVocab(newvocab);
-    }
+//    @Override
+//    public VocabResponse getVocabById(Integer id) {
+//        Vocab newvocab = vocabRepository.findById(id)
+//                .orElseThrow(() -> new ResourceNotFoundException("khong tim thay tu vung"));
+//        return vocabMapper.mapToVocab(newvocab);
+//    }
 }

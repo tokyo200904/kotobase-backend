@@ -13,4 +13,5 @@ public class VocabResponse {
     private String meaning;
     private String romaji;
     private List<ExampleResponse> examples;
+    private boolean isSaved;
 }

@@ -2,12 +2,13 @@ package kotobase_backend.modules.exam.service.scoring;
 
 import jakarta.transaction.Transactional;
 import kotobase_backend.comom.exceptions.CustomException.ResourceNotFoundException;
+import kotobase_backend.modules.exam.dto.response.ExamWebSocketPayload;
 import kotobase_backend.modules.exam.entity.*;
 import kotobase_backend.modules.exam.repository.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.List;
@@ -23,7 +24,7 @@ public class ScoringExecutorService {
     private final ExamAttemptAnswerRepository examAttemptAnswerRepository;
     private final QuestionRepository questionRepository;
     private final AnswerRepository answerRepository;
-
+    private final SimpMessagingTemplate messagingTemplate;
     @Transactional
     public void doCalculateScore(Long attemptId){
         ExamAttempt examAttempt = examAttemptRepository.findById(attemptId)
@@ -95,6 +96,10 @@ public class ScoringExecutorService {
         examAttempt.setTotalScore(totalScore);
         examAttemptRepository.save(examAttempt);
 
+        ExamWebSocketPayload payload = new ExamWebSocketPayload();
+        payload.setAction("SCORE_READY");
+        payload.setMessage("Đã chấm điểm xong!");
+        messagingTemplate.convertAndSend("/topic/exam/" + attemptId, payload);
         log.info("Scoring Queue Chấm xong Attempt ID: {} | Tổng điểm: {}", attemptId, totalScore);
     }
 }

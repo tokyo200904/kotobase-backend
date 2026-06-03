@@ -9,6 +9,6 @@ import java.util.List;
 
 public interface KanjiService {
     public List<KanjisResponse> getKanji(Level level);
-    public KanjiDetelResponse getKanjiDetel(Integer id);
+    public KanjiDetelResponse getKanjiDetel(Integer id, Integer userId);
     public List<KanjiFindResponse> findKanji(String key);
 }

@@ -19,4 +19,5 @@ public class KanjiDetelResponse {
     private List<KanjiReadingResponse> kun;
     private Level level;
     private String han;
+    private boolean isSaved;
 }

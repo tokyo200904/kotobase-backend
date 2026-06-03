@@ -18,7 +18,7 @@ public class KanjiMapper {
         return kanjisResponse;
     }
 
-    public KanjiDetelResponse toDetelResponse(Kanji kanji, List<KanjiReadingResponse> onKanjiReadings, List<KanjiReadingResponse> kunKanjiReadings) {
+    public KanjiDetelResponse toDetelResponse(Kanji kanji, List<KanjiReadingResponse> onKanjiReadings, List<KanjiReadingResponse> kunKanjiReadings,boolean isSaved) {
         KanjiDetelResponse kanjiDetelResponse = new KanjiDetelResponse();
         kanjiDetelResponse.setId(kanji.getId());
         kanjiDetelResponse.setCharacters(kanji.getCharacters());
@@ -28,6 +28,7 @@ public class KanjiMapper {
         kanjiDetelResponse.setKun(kunKanjiReadings);
         kanjiDetelResponse.setLevel(kanji.getLevel().getLevel());
         kanjiDetelResponse.setHan(kanji.getHan());
+        kanjiDetelResponse.setSaved(isSaved);
         return kanjiDetelResponse;
     }
 

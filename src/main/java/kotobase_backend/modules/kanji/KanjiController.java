@@ -5,8 +5,10 @@ import kotobase_backend.modules.kanji.dto.Response.KanjiDetelResponse;
 import kotobase_backend.modules.kanji.dto.Response.KanjiFindResponse;
 import kotobase_backend.modules.kanji.dto.Response.KanjisResponse;
 import kotobase_backend.modules.kanji.service.KanjiService;
+import kotobase_backend.security.userdetail.CustomUserDetails;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -24,8 +26,10 @@ public class KanjiController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<KanjiDetelResponse> getDetelKanji(@PathVariable Integer id) {
-        return ResponseEntity.ok(kanjiService.getKanjiDetel(id));
+    public ResponseEntity<KanjiDetelResponse> getDetelKanji(@AuthenticationPrincipal CustomUserDetails userDetails,
+                                                            @PathVariable Integer id) {
+        Integer userId = userDetails.getUserId();
+        return ResponseEntity.ok(kanjiService.getKanjiDetel(id, userId));
     }
 
     @GetMapping("/search")

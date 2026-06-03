@@ -10,6 +10,6 @@ import java.util.Optional;
 
 
 public interface VocabService {
-    public PageVocabResponse<VocabResponse> getAllVocabs(VocabRequest request);
-    public VocabResponse getVocabById(Integer id);
+    public PageVocabResponse<VocabResponse> getAllVocabs(VocabRequest request, Integer userId);
+//    public VocabResponse getVocabById(Integer id);
 }

@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 import java.time.LocalDate;
 
 @Entity
-@Table(name = "user_daily_activity", uniqueConstraints = {
+@Table(name = "user_daily_activities", uniqueConstraints = {
         @UniqueConstraint(columnNames = {"user_id", "study_date"})
 })
 @Data
@@ -34,8 +34,8 @@ public class UserDailyActivity {
     private int correctAnswers = 0;
 
     @Builder.Default
-    @Column(name = "minutes_spent")
-    private int minutesSpent = 0;
+    @Column(name = "seconds_spent")
+    private Integer secondsSpent = 0;
 
     @ManyToOne
     @JoinColumn(name = "user_id")

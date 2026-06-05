@@ -51,12 +51,8 @@ public class kanjiServiceImpl implements KanjiService {
                 .map(o -> new KanjiReadingResponse(o.getReading(),o.getRomaji()))
                 .toList();
 
-        boolean isSaved = false;
-        if (userId != null) {
-            isSaved = userItemProgressRepository.existsByUserIdAndItemIdAndItemType(userId, id, ItemType.KANJI);
-        }
 
-        return kanjiMapper.toDetelResponse(kanji, onKanji, kunKanji, isSaved);
+        return kanjiMapper.toDetelResponse(kanji, onKanji, kunKanji);
     }
 
     @Override

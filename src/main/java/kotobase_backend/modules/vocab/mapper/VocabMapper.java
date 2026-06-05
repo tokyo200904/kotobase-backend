@@ -14,7 +14,7 @@ import java.util.List;
 public class VocabMapper {
     private final ExampleMapper exampleMapper;
 
-    public VocabResponse mapToVocab(Vocab v, boolean isSaved) {
+    public VocabResponse mapToVocab(Vocab v) {
         List<ExampleResponse> examples =
                 v.getExampleVocabs() == null ? List.of() : v.getExampleVocabs().stream()
                         .map(exampleMapper::toExampleResponse)
@@ -27,7 +27,6 @@ public class VocabMapper {
         response.setMeaning(v.getMeaning());
         response.setRomaji(v.getRomaji());
         response.setExamples(examples);
-        response.setSaved(isSaved);
         return response;
     }
 }

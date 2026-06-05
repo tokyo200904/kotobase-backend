@@ -2,6 +2,7 @@ package kotobase_backend.modules.kanji.dto.Response;
 
 import kotobase_backend.comom.enums.KanjiType;
 import kotobase_backend.comom.enums.Level;
+import kotobase_backend.modules.examples.dto.response.ExampleResponse;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -19,5 +20,5 @@ public class KanjiDetelResponse {
     private List<KanjiReadingResponse> kun;
     private Level level;
     private String han;
-    private boolean isSaved;
+    private List<ExampleResponse> examples;
 }

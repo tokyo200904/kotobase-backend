@@ -86,4 +86,14 @@ public class progressController {
         userItemProgressService.submitExtraPracticeAnswer(userId, request);
         return ResponseEntity.ok(Map.of("message", "Đã cộng điểm luyện tập và giữ chuỗi!"));
     }
+
+    @GetMapping("/saved-items")
+    public ResponseEntity<?> getSavedItems(@AuthenticationPrincipal CustomUserDetails userDetails,
+                                           @RequestParam ItemType type,
+                                           @RequestParam(defaultValue = "1") int page,
+                                           @RequestParam(defaultValue = "20") int size) {
+        Integer userId = userDetails.getUserId();
+
+        return ResponseEntity.ok(userItemProgressService.getSavedItems(userId, type, page, size));
+    }
 }

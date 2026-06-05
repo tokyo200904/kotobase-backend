@@ -2,7 +2,9 @@ package kotobase_backend.modules.examples.mapper;
 
 import kotobase_backend.modules.examples.dto.response.ExampleResponse;
 import kotobase_backend.modules.examples.entity.ExampleGrammar;
+import kotobase_backend.modules.examples.entity.ExampleKanji;
 import kotobase_backend.modules.examples.entity.ExampleVocab;
+import kotobase_backend.modules.kanji.entity.Kanji;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -22,6 +24,15 @@ public class ExampleMapper {
         er.setMeaning(exampleGrammar.getMeaning());
         er.setContent(exampleGrammar.getContent());
         er.setDisplayOrder(exampleGrammar.getDisplayOrder());
+        return er;
+    }
+
+    public ExampleResponse toExampleResponseKanji(ExampleKanji kanji) {
+        ExampleResponse er = new ExampleResponse();
+        er.setId(kanji.getId());
+        er.setMeaning(kanji.getMeaning());
+        er.setContent(kanji.getContent());
+        er.setDisplayOrder(kanji.getDisplayOrder());
         return er;
     }
 }

@@ -44,19 +44,9 @@ public class VocabServiceImpl implements VocabService {
 
             Page<Vocab> pageVocab = vocabRepository.findByTopicId(request.getTopicId(), pageable);
 
-        final List<Integer> savedVocabIds;
-        if (userId!= null) {
-            savedVocabIds = userItemProgressRepository.findSavedItemIds(userId, ItemType.VOCAB);
-        }
-        else {
-            savedVocabIds = new ArrayList<>();
-        }
 
         List<VocabResponse> data = pageVocab.getContent().stream()
-                .map(vocab -> {
-                    boolean isSaved = savedVocabIds.contains(vocab.getId());
-                    return vocabMapper.mapToVocab(vocab, isSaved);
-                })
+                .map(vocabMapper::mapToVocab)
                 .toList();
 
         PageVocabResponse<VocabResponse> res = new PageVocabResponse<>();

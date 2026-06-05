@@ -8,7 +8,9 @@ import kotobase_backend.modules.kanji.entity.Kanji;
 import kotobase_backend.modules.kanji.repository.KanjiRepository;
 import kotobase_backend.modules.progress.dto.request.ItemRequest;
 import kotobase_backend.modules.progress.dto.request.SubmitReviewRequest;
+import kotobase_backend.modules.progress.dto.response.PageResponse;
 import kotobase_backend.modules.progress.dto.response.QuizQuestionResponse;
+import kotobase_backend.modules.progress.dto.response.SavedItemResponse;
 import kotobase_backend.modules.progress.entity.UserDailyActivity;
 import kotobase_backend.modules.progress.entity.UserItemProgress;
 import kotobase_backend.modules.progress.repository.UserDailyActivityRepository;
@@ -19,6 +21,10 @@ import kotobase_backend.modules.user.repository.UserRepository;
 import kotobase_backend.modules.vocab.entity.Vocab;
 import kotobase_backend.modules.vocab.repository.VocabRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -36,7 +42,6 @@ public class UserItemProgressServiceImpl implements UserItemProgressService {
     private final UserItemProgressRepository userItemProgressRepository;
     private final UserRepository userRepository;
     private final KanjiRepository kanjiRepository;
-    private final GrammarRepository grammarRepository;
     private final VocabRepository vocabRepository;
     private final UserDailyActivityRepository userDailyActivityRepository;
 
@@ -229,7 +234,7 @@ public class UserItemProgressServiceImpl implements UserItemProgressService {
         };
     }
 
-    private void updateDailyStats(Integer userId, boolean isCorrect, Integer timeSpentSeconds,boolean isFirstReviewToday) {
+    public void updateDailyStats(Integer userId, boolean isCorrect, Integer timeSpentSeconds,boolean isFirstReviewToday) {
         LocalDate today = LocalDate.now();
 
         User users = userRepository.findById(userId).orElseThrow();
@@ -278,6 +283,47 @@ public class UserItemProgressServiceImpl implements UserItemProgressService {
             progress.setStatus(LearningStatus.LEARNING);
             userItemProgressRepository.save(progress);
         }
+    }
+
+    @Override
+    public PageResponse<SavedItemResponse> getSavedItems(Integer userId, ItemType type, int page, int size) {
+
+        int dbPage = (page > 0) ? page - 1 : 0;
+        Pageable pageable = PageRequest.of(dbPage, size, Sort.by(Sort.Direction.DESC, "id"));
+        Page<UserItemProgress> progressPage = userItemProgressRepository.findByUserIdAndItemType(userId, type, pageable);
+
+        List<SavedItemResponse> dataList = progressPage.getContent().stream().map(progress -> {
+
+            SavedItemResponse.SavedItemResponseBuilder builder = SavedItemResponse.builder()
+                    .progressId(progress.getId())
+                    .targetItemId(progress.getItemId())
+                    .itemType(progress.getItemType().name())
+                    .memoryLevel(progress.getMemoryLevel())
+                    .status(progress.getStatus().name())
+                    .nextReviewDate(progress.getNextReviewDate());
+
+            if (type == ItemType.KANJI) {
+                kanjiRepository.findById(progress.getItemId()).ifPresent(k -> {
+                    builder.meaning(k.getMeaning())
+                            .kanjiCharacter(k.getCharacters());
+                });
+            }
+            else if (type == ItemType.VOCAB) {
+                vocabRepository.findById(progress.getItemId()).ifPresent(v -> {
+                    builder.meaning(v.getMeaning())
+                            .vocabularyWord(v.getWord());
+                });
+            }
+
+            return builder.build();
+        }).toList();
+        return PageResponse.<SavedItemResponse>builder()
+                .data(dataList)
+                .page(page)
+                .limit(progressPage.getSize())
+                .totalPages(progressPage.getTotalPages())
+                .totalElements(progressPage.getTotalElements())
+                .build();
     }
 }
 

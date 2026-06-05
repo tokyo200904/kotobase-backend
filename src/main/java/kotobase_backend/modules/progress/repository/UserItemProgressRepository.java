@@ -2,6 +2,8 @@ package kotobase_backend.modules.progress.repository;
 
 import kotobase_backend.comom.enums.ItemType;
 import kotobase_backend.modules.progress.entity.UserItemProgress;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -51,5 +53,9 @@ public interface UserItemProgressRepository extends JpaRepository<UserItemProgre
             "AND p.itemType = :type " +
             "AND p.nextReviewDate <= CURRENT_TIMESTAMP")
     int countDueItemsByType(@Param("userId") Integer userId, @Param("type") ItemType type);
+
+    Page<UserItemProgress> findByUserIdAndItemType(Integer userId, ItemType itemType, Pageable pageable);
+
+    boolean existsByUserIdAndItemTypeAndItemId(Integer userId, ItemType itemType, Integer itemId);
 }
 

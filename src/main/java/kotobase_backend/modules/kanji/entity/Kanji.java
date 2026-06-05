@@ -2,6 +2,8 @@ package kotobase_backend.modules.kanji.entity;
 
 import jakarta.persistence.*;
 import kotobase_backend.modules.JlptLevel.entity.JlptLevel;
+import kotobase_backend.modules.examples.entity.ExampleKanji;
+import kotobase_backend.modules.examples.entity.ExampleVocab;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -39,5 +41,8 @@ public class Kanji {
 
     @OneToMany(mappedBy = "kanji", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<KanjiReading> readings;
+
+    @OneToMany(mappedBy = "kanji", fetch = FetchType.LAZY)
+    private List<ExampleKanji> exampleKanjis;
 }
 

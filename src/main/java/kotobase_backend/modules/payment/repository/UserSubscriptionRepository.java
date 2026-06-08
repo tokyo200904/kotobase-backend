@@ -15,11 +15,7 @@ import java.util.Optional;
 public interface UserSubscriptionRepository extends JpaRepository<UserSubscription, Integer> {
     Optional<UserSubscription> findFirstByUser_IdAndStatus(Integer userId, SubscriptionStatus status);
 
-    @Query("SELECT COUNT(s) > 0 FROM UserSubscription s " +
-            "WHERE s.user.id = :userId " +
-            "AND s.status = 'ACTIVE' " +
-            "AND s.endDate > CURRENT_TIMESTAMP")
-    boolean isUserPremium(@Param("userId") Integer userId);
+    boolean existsByUserIdAndStatusAndEndDateAfter(Integer userId, SubscriptionStatus status, LocalDateTime currentTime);
 
     @Modifying
     @Query("UPDATE UserSubscription s " +
@@ -30,10 +26,4 @@ public interface UserSubscriptionRepository extends JpaRepository<UserSubscripti
                                @Param("newStatus") SubscriptionStatus newStatus,
                                @Param("currentTime") LocalDateTime currentTime);
 
-    @Query("SELECT COUNT(s) > 0 " +
-            "FROM UserSubscription s " +
-            "WHERE s.user.id = :userId " +
-            "AND s.status = :activeStatus " +
-            "AND s.endDate > CURRENT_TIMESTAMP")
-    boolean isUserPremium(@Param("userId") Integer userId, @Param("activeStatus") SubscriptionStatus activeStatus);
 }

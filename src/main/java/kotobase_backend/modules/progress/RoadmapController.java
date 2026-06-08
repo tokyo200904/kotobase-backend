@@ -23,15 +23,14 @@ public class RoadmapController {
                                         @RequestParam Integer levelId,
                                         @RequestParam ItemType type) {
 
-        Integer userId = userDetails.getUserId();
+        Integer userId = (userDetails != null) ? userDetails.getUserId() : null;
         return ResponseEntity.ok(roadmapService.getRoadmap(userId, levelId, type));
     }
 
     @PostMapping("/stations/{stationId}/complete")
-    public ResponseEntity<?> completeStation(
-            @AuthenticationPrincipal CustomUserDetails userDetails,
-            @PathVariable Integer stationId) {
-        Integer userId = userDetails.getUserId();
+    public ResponseEntity<?> completeStation(@AuthenticationPrincipal CustomUserDetails userDetails,
+                                             @PathVariable Integer stationId) {
+        Integer userId = (userDetails != null) ? userDetails.getUserId() : null;
         try {
             roadmapService.completeStation(userId, stationId);
             return ResponseEntity.ok(Map.of("message", "Vượt ải thành công! Đã mở khóa trạm tiếp theo và đưa từ vựng vào hệ thống ôn tập."));
@@ -41,15 +40,17 @@ public class RoadmapController {
     }
 
     @GetMapping("/stations/{stationId}/items")
-    public ResponseEntity<?> getStationItems(@PathVariable Integer stationId) {
-        return ResponseEntity.ok(roadmapService.getStationItems(stationId));
+    public ResponseEntity<?> getStationItems(@PathVariable Integer stationId,
+                                             @AuthenticationPrincipal CustomUserDetails userDetails) {
+        Integer userId = (userDetails != null) ? userDetails.getUserId() : null;
+        return ResponseEntity.ok(roadmapService.getStationItems(stationId, userId));
     }
 
     @PostMapping("/stations/{stationId}/submit-test")
-    public ResponseEntity<?> submitTest(@AuthenticationPrincipal CustomUserDetails user,
+    public ResponseEntity<?> submitTest(@AuthenticationPrincipal CustomUserDetails userDetails,
                                         @PathVariable Integer stationId,
                                         @RequestBody SubmitTestRequest request) {
-        Integer userId = user.getUserId();
+        Integer userId = (userDetails != null) ? userDetails.getUserId() : null;
         return ResponseEntity.ok(roadmapService.submitAndEvaluateTest(userId, stationId, request));
     }
 }

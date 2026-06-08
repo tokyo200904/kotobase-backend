@@ -56,6 +56,7 @@ public class SecurityConfig  {
                         .requestMatchers("/login/oauth2/**").permitAll()
                         .requestMatchers("/error").permitAll()
                         .requestMatchers("/api/v1/images/**").permitAll()
+                        .requestMatchers("/api/payment/vnpay-ipn").permitAll()
                         .anyRequest().permitAll()
                 )
 

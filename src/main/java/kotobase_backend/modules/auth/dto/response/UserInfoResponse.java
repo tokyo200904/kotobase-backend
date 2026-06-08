@@ -16,4 +16,5 @@ public class UserInfoResponse {
     private RoleName role;
     private String fullName;
     private String photo;
+    private boolean isPremium;
 }

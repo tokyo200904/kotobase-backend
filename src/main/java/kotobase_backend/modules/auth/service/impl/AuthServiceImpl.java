@@ -8,6 +8,8 @@ import kotobase_backend.modules.auth.dto.response.AuthResponse;
 import kotobase_backend.modules.auth.dto.response.UserInfoResponse;
 import kotobase_backend.modules.auth.mapper.AuthMapper;
 import kotobase_backend.modules.auth.service.AuthService;
+import kotobase_backend.modules.payment.repository.UserSubscriptionRepository;
+import kotobase_backend.modules.payment.service.PremiumGuardService;
 import kotobase_backend.modules.user.entity.Role;
 import kotobase_backend.modules.user.entity.User;
 import kotobase_backend.modules.user.repository.RoleRepository;
@@ -36,6 +38,7 @@ public class AuthServiceImpl implements AuthService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final RoleRepository roleRepository;
+    private final PremiumGuardService premiumGuardService;
 
     @Override
     public AuthResponse login(LoginRequest request) {
@@ -94,12 +97,16 @@ public class AuthServiceImpl implements AuthService {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("không tìm thấy user"));
 
+        boolean isPremium = premiumGuardService.check(user.getId());
+
+
         return UserInfoResponse.builder()
                 .id(user.getId())
                 .email(user.getEmail())
                 .role(user.getRoleName().getRole())
                 .photo(user.getPhoto()!=null ? user.getPhoto() : "")
                 .fullName(user.getFullName())
+                .isPremium(isPremium)
                 .build();
     }
 }

@@ -174,6 +174,8 @@ public class PaymentServiceImpl implements PaymentService {
                 transaction.setGatewayTransId(vnp_TransactionNo);
 
                 grantPremiumAccess(transaction.getUser(), transaction.getPlan());
+                transactionRepository.cancelOtherPendingTransactions(transaction.getUser().getId(), transaction.getId());
+
                 log.info("!!! THÀNH CÔNG: Đã cấp Premium cho user_id = {} !!!", transaction.getUser().getId());
             } else {
                 transaction.setStatus(TransactionStatus.FAILED);

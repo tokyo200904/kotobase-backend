@@ -11,6 +11,6 @@ import java.util.Map;
 public interface RoadmapService {
     public List<StationResponse> getRoadmap(Integer userId, Integer levelId, ItemType itemType);
     public void completeStation(Integer userId, Integer stationId);
-    public StationItemsResponse getStationItems(Integer stationId);
+    public StationItemsResponse getStationItems(Integer stationId, Integer userId);
     public Map<String, Object> submitAndEvaluateTest(Integer userId, Integer stationId, SubmitTestRequest request);
 }

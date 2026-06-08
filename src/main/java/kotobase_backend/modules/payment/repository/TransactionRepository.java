@@ -21,4 +21,12 @@ public interface TransactionRepository extends JpaRepository<Transaction, String
     int cancelExpiredTransactions(@Param("oldStatus") TransactionStatus oldStatus,
                                   @Param("newStatus") TransactionStatus newStatus,
                                   @Param("cutoffTime") LocalDateTime cutoffTime);
+
+    @Modifying
+    @Query("UPDATE Transaction t " +
+            "SET t.status = 'CANCELLED' " +
+            "WHERE t.user.id = :userId " +
+            "AND t.status = 'PENDING' " +
+            "AND t.id != :successOrderId")
+    void cancelOtherPendingTransactions(@Param("userId") Integer userId, @Param("successOrderId") String successOrderId);
 }

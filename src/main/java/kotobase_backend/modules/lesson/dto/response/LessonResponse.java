@@ -11,4 +11,5 @@ public class LessonResponse {
     private Integer id;
     private String title;
     private Integer lessonOrder;
+    private Boolean isLocked;
 }

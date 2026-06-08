@@ -18,13 +18,16 @@ import kotobase_backend.modules.exam.service.ExamAttemptService;
 import kotobase_backend.modules.exam.service.ExamAutosaveService;
 import kotobase_backend.modules.exam.service.ExamTransitionService;
 import kotobase_backend.modules.exam.service.scoring.ScoringQueueService;
+import kotobase_backend.modules.payment.service.PremiumGuardService;
 import kotobase_backend.modules.user.entity.User;
 import kotobase_backend.modules.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -45,17 +48,18 @@ public class ExamAttemptServiceImpl implements ExamAttemptService {
     private final ExamAttemptAnswerRepository examAttemptAnswerRepository;
     private final UserRepository userRepository;
     private final ScoringQueueService scoringQueueService;
-    private final QuestionRepository questionRepository;
-    private final AnswerRepository answerRepository;
     private final ExamTimerManager  examTimerManager;
     private final ExamTransitionService  examTransitionService;
     private final ExamAutosaveService examAutosaveService;
+    private final PremiumGuardService premiumGuardService;
 
     //hàm lấy danh sách câu hỏi đáp án
     @Override
     public SectionResponse getSectionDetail(Long attemptId, Long sectionId, Integer currentUserId) {
         ExamAttempt attempt = examAttemptRepository.findById(attemptId)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy dữ liệu lượt thi"));
+
+        verifyAttemptOwnership(attemptId, currentUserId);
 
         if (!attempt.getUser().getId().equals(currentUserId)) {
             throw new RuntimeException("Bạn không có quyền xem bài thi này.");
@@ -100,6 +104,11 @@ public class ExamAttemptServiceImpl implements ExamAttemptService {
     @Transactional
     @Override
     public ExamStartResponse startOrResumeExam(Integer userId, Long examId) {
+        if (userId == null) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Vui lòng đăng nhập để thi thử.");
+        }
+        premiumGuardService.enforcePremium(userId, "Chức năng thi thử JLPT độc quyền chỉ dành cho tài khoản Premium.");
+
         Exam exam = examRepository.findById(examId)
                 .orElseThrow(() -> new ResourceNotFoundException("khong tim thay bai thi"));
         if (!exam.getIsPublished())
@@ -112,7 +121,7 @@ public class ExamAttemptServiceImpl implements ExamAttemptService {
     @Override
     public ExamResumeState getExamResumeState(Long attemptId, Integer userId) {
         LocalDateTime now = LocalDateTime.now();
-
+        verifyAttemptOwnership(attemptId, userId);
         ExamAttempt examAttempt = examAttemptRepository.findById(attemptId)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy lượt thi"));
 
@@ -176,6 +185,7 @@ public class ExamAttemptServiceImpl implements ExamAttemptService {
     @Override
     public SectionSubmitResponse submitSection(Long sectionId, Long attemptId, Integer userId) {
         LocalDateTime now = LocalDateTime.now();
+        verifyAttemptOwnership(attemptId, userId);
 
         ExamAttempt examAttempt = examAttemptRepository.findById(attemptId)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy lượt thi"));
@@ -338,4 +348,13 @@ public class ExamAttemptServiceImpl implements ExamAttemptService {
         return examStartResponse;
 
     }
+
+    private void verifyAttemptOwnership(Long attemptId, Integer userId) {
+        ExamAttempt attempt = examAttemptRepository.findById(attemptId)
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy bài làm này"));
+
+        if (!attempt.getUser().getId().equals(userId)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Bạn không có quyền truy cập bài thi này.");
+        }
+}
 }

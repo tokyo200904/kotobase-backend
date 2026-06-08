@@ -18,4 +18,5 @@ public class ExamResponse {
     private int passingScore;
     private BigDecimal maxScore;
     private Integer totalQuestions;
+    private Boolean isLocked;
 }

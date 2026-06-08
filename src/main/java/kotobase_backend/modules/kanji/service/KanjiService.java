@@ -8,7 +8,7 @@ import kotobase_backend.modules.kanji.dto.Response.KanjisResponse;
 import java.util.List;
 
 public interface KanjiService {
-    public List<KanjisResponse> getKanji(Level level);
+    public List<KanjisResponse> getKanji(Level level, Integer userId);
     public KanjiDetelResponse getKanjiDetel(Integer id, Integer userId);
-    public List<KanjiFindResponse> findKanji(String key);
+    public List<KanjiFindResponse> findKanji(String key, Integer userId);
 }

@@ -7,6 +7,6 @@ import java.util.List;
 
 public interface GrammarService {
 
-    public List<GrammarTitleResponse> findByLessonId(Integer lessonId);
-    public GrammarResponse findById(Integer id);
+    public List<GrammarTitleResponse> findByLessonId(Integer lessonId, Integer userId);
+    public GrammarResponse findById(Integer id, Integer userId);
 }

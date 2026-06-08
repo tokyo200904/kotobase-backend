@@ -8,6 +8,6 @@ import kotobase_backend.modules.lesson.entity.Lesson;
 import java.util.List;
 
 public interface LessonService {
-    List<LessonResponse> findByLevel(Integer levelId, TargetType type);
+    List<LessonResponse> findByLevel(Integer levelId, TargetType type, Integer userId);
 
 }

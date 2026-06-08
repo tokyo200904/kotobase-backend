@@ -2,7 +2,11 @@ package kotobase_backend.modules.vocab.service.impl;
 
 import kotobase_backend.comom.enums.ItemType;
 import kotobase_backend.comom.exceptions.CustomException.ResourceNotFoundException;
+import kotobase_backend.modules.lesson.entity.Lesson;
+import kotobase_backend.modules.lesson.repository.LessonRepository;
+import kotobase_backend.modules.payment.service.PremiumGuardService;
 import kotobase_backend.modules.progress.repository.UserItemProgressRepository;
+import kotobase_backend.modules.topic.entity.Topic;
 import kotobase_backend.modules.topic.repository.TopicRepository;
 import kotobase_backend.modules.vocab.dto.request.VocabRequest;
 import kotobase_backend.modules.vocab.dto.response.PageVocabResponse;
@@ -15,7 +19,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,22 +34,28 @@ public class VocabServiceImpl implements VocabService {
     private final VocabMapper vocabMapper;
     private final TopicRepository topicRepository;
     private final UserItemProgressRepository userItemProgressRepository;
+    private final PremiumGuardService premiumGuardService;
+    private final LessonRepository lessonRepository;
 
     @Override
     public PageVocabResponse<VocabResponse> getAllVocabs(VocabRequest request, Integer userId) {
 
-        boolean check = topicRepository.existsById(request.getTopicId());
-        if(!check){
-            throw new ResourceNotFoundException("không tìm thâý topic");
+        Topic topic = topicRepository.findById(request.getTopicId())
+                .orElseThrow(() -> new ResourceNotFoundException("không tìm thâý topic"));
+
+        Lesson parentLesson = topic.getLesson();
+
+        if (parentLesson.getLessonOrder() > 5) {
+            if (userId == null) {
+                throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Vui lòng đăng nhập để học từ vựng bài này.");
+            }
+            premiumGuardService.enforcePremium(userId, "Từ vựng của bài học này đã bị khóa. Vui lòng nâng cấp Premium.");
         }
+        int limit = request.getLimit();
+        int page = request.getPage() - 1 ;
+        Pageable pageable = PageRequest.of(page, limit);
 
-            int limit = request.getLimit();
-            int page = request.getPage() - 1 ;
-
-            Pageable pageable = PageRequest.of(page, limit);
-
-            Page<Vocab> pageVocab = vocabRepository.findByTopicId(request.getTopicId(), pageable);
-
+        Page<Vocab> pageVocab = vocabRepository.findByTopicId(request.getTopicId(), pageable);
 
         List<VocabResponse> data = pageVocab.getContent().stream()
                 .map(vocabMapper::mapToVocab)

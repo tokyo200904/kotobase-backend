@@ -1,6 +1,8 @@
 package kotobase_backend.modules.payment.service.impl;
 
 import jakarta.servlet.http.HttpServletRequest;
+import kotobase_backend.comom.enums.SubscriptionStatus;
+import kotobase_backend.comom.enums.TransactionStatus;
 import kotobase_backend.modules.payment.dto.response.PaymentResponse;
 import kotobase_backend.modules.payment.entity.PaymentGatewayLog;
 import kotobase_backend.modules.payment.entity.SubscriptionPlan;
@@ -52,7 +54,7 @@ public class PaymentServiceImpl implements PaymentService {
                 .user(user)
                 .plan(plan)
                 .amount(plan.getPrice())
-                .status("PENDING")
+                .status(TransactionStatus.PENDING)
                 .build();
         transactionRepository.save(transaction);
 
@@ -158,7 +160,7 @@ public class PaymentServiceImpl implements PaymentService {
             logEntry.setTransaction(transaction);
             logRepository.save(logEntry);
 
-            if (!"PENDING".equals(transaction.getStatus())) {
+            if (transaction.getStatus() != TransactionStatus.PENDING) {
                 log.info("Đơn IPN {} đã được xử lý trước đó", orderId);
                 return "{\"RspCode\":\"02\",\"Message\":\"Order already confirmed\"}";
             }
@@ -168,13 +170,13 @@ public class PaymentServiceImpl implements PaymentService {
             }
 
             if ("00".equals(vnp_ResponseCode)) {
-                transaction.setStatus("SUCCESS");
+                transaction.setStatus(TransactionStatus.SUCCESS);
                 transaction.setGatewayTransId(vnp_TransactionNo);
 
                 grantPremiumAccess(transaction.getUser(), transaction.getPlan());
                 log.info("!!! THÀNH CÔNG: Đã cấp Premium cho user_id = {} !!!", transaction.getUser().getId());
             } else {
-                transaction.setStatus("FAILED");
+                transaction.setStatus(TransactionStatus.FAILED);
                 log.warn("Đơn hàng thất bại từ VNPay, mã lỗi: {}", vnp_ResponseCode);
             }
 
@@ -206,7 +208,7 @@ public class PaymentServiceImpl implements PaymentService {
 
     private void grantPremiumAccess(User user, SubscriptionPlan plan) {
         UserSubscription currentSub = userSubscriptionRepository
-                .findFirstByUser_IdAndStatus(user.getId(), "ACTIVE").orElse(null);
+                .findFirstByUser_IdAndStatus(user.getId(), SubscriptionStatus.ACTIVE).orElse(null);
 
         if (currentSub != null && currentSub.getEndDate().isAfter(LocalDateTime.now())) {
             currentSub.setEndDate(currentSub.getEndDate().plusDays(plan.getDurationDays()));
@@ -217,7 +219,7 @@ public class PaymentServiceImpl implements PaymentService {
                     .plan(plan)
                     .startDate(LocalDateTime.now())
                     .endDate(LocalDateTime.now().plusDays(plan.getDurationDays()))
-                    .status("ACTIVE")
+                    .status(SubscriptionStatus.ACTIVE)
                     .build();
             userSubscriptionRepository.save(newSub);
         }

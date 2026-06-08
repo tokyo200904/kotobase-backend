@@ -1,5 +1,6 @@
 package kotobase_backend.modules.payment.service.scoring;
 
+import kotobase_backend.comom.enums.TransactionStatus;
 import kotobase_backend.modules.payment.repository.TransactionRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -23,7 +24,7 @@ public class PaymentCleanupTask {
         LocalDateTime cutoffTime = LocalDateTime.now().minusMinutes(20);
 
         try {
-            int updatedCount = transactionRepository.cancelExpiredTransactions("PENDING", "CANCELLED", cutoffTime);
+            int updatedCount = transactionRepository.cancelExpiredTransactions(TransactionStatus.PENDING, TransactionStatus.CANCELLED, cutoffTime);
 
             if (updatedCount > 0) {
                 log.info("--- [CRON JOB] Đã hủy thành công {} đơn hàng quá hạn ---", updatedCount);

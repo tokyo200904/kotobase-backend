@@ -21,20 +21,25 @@ public class KanjiController {
     private final KanjiService kanjiService;
 
     @GetMapping
-    public ResponseEntity<List<KanjisResponse>> getKanjiLvel(@RequestParam Level level) {
-        return ResponseEntity.ok(kanjiService.getKanji(level));
+    public ResponseEntity<List<KanjisResponse>> getKanjiLvel(@AuthenticationPrincipal CustomUserDetails userDetails,
+                                                             @RequestParam Level level) {
+
+        Integer userId = (userDetails != null) ? userDetails.getUserId() : null;
+        return ResponseEntity.ok(kanjiService.getKanji(level, userId));
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<KanjiDetelResponse> getDetelKanji(@AuthenticationPrincipal CustomUserDetails userDetails,
                                                             @PathVariable Integer id) {
-        Integer userId = userDetails.getUserId();
+        Integer userId = (userDetails != null) ? userDetails.getUserId() : null;
         return ResponseEntity.ok(kanjiService.getKanjiDetel(id, userId));
     }
 
     @GetMapping("/search")
-    public ResponseEntity<List<KanjiFindResponse>> findKanjis(@RequestParam String keyword) {
-        return ResponseEntity.ok(kanjiService.findKanji(keyword));
+    public ResponseEntity<List<KanjiFindResponse>> findKanjis(@AuthenticationPrincipal CustomUserDetails userDetails,
+                                                              @RequestParam String keyword) {
+        Integer userId = (userDetails != null) ? userDetails.getUserId() : null;
+        return ResponseEntity.ok(kanjiService.findKanji(keyword, userId));
     }
 
 }

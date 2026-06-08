@@ -6,6 +6,6 @@ import kotobase_backend.modules.exam.dto.response.ExamResponse;
 import kotobase_backend.modules.exam.dto.response.PageExamResponse;
 
 public interface ExamQueryService {
-    public PageExamResponse<ExamResponse> getExamByLevel(ExamRequest examRequest);
+    public PageExamResponse<ExamResponse> getExamByLevel(ExamRequest examRequest, Integer userId);
     public ExamDetailResponse getDetailExamById(Long id);
 }

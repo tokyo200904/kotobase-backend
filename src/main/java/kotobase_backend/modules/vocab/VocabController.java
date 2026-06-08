@@ -24,7 +24,7 @@ public class VocabController {
     @GetMapping("/by_topic")
     public ResponseEntity<PageVocabResponse<VocabResponse>> getList(@AuthenticationPrincipal CustomUserDetails userDetails,
                                                                     @Valid @ModelAttribute VocabRequest request) {
-        Integer userId = userDetails.getUserId();
+        Integer userId = (userDetails != null) ? userDetails.getUserId() : null;
         return ResponseEntity.ok(vocabService.getAllVocabs(request,userId));
     }
 

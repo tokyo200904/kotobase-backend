@@ -14,4 +14,5 @@ public class KanjiFindResponse {
     private String characters;
     private String meaning;
     private String han;
+    private Boolean isLocked;
 }

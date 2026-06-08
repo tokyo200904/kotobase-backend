@@ -10,6 +10,7 @@ import kotobase_backend.modules.exam.entity.Exam;
 import kotobase_backend.modules.exam.mapper.ExamQueryMapper;
 import kotobase_backend.modules.exam.repository.ExamRepository;
 import kotobase_backend.modules.exam.service.ExamQueryService;
+import kotobase_backend.modules.payment.service.PremiumGuardService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -25,9 +26,11 @@ public class ExamQueryServiceImpl implements ExamQueryService {
     private final ExamRepository examRepository;
     private final JlptLevelRepository jlptLevelRepository;
     private final ExamQueryMapper examMapper;
+    private final PremiumGuardService premiumGuardService;
 
     @Override
-    public PageExamResponse<ExamResponse> getExamByLevel(ExamRequest examRequest) {
+    public PageExamResponse<ExamResponse> getExamByLevel(ExamRequest examRequest, Integer userId) {
+        boolean isPremium = (userId != null) && premiumGuardService.check(userId);
         boolean check = jlptLevelRepository.existsById(examRequest.getLevelId());
         if (!check) {
             throw new ResourceNotFoundException("không tìm thấy level");
@@ -40,7 +43,10 @@ public class ExamQueryServiceImpl implements ExamQueryService {
         Page<Exam> pageExam = examRepository.findByLevel_IdAndIsPublishedTrue(examRequest.getLevelId(), pageable);
 
         List<ExamResponse> data = pageExam.getContent().stream()
-                .map(examMapper::toExamResponse)
+                .map(exam -> {
+                    boolean isLocked = !isPremium;
+                    return examMapper.toExamResponse(exam, isLocked);
+                })
                 .toList();
 
         PageExamResponse<ExamResponse> response = new PageExamResponse<>();

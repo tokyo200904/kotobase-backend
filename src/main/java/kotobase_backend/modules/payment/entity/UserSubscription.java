@@ -1,6 +1,7 @@
 package kotobase_backend.modules.payment.entity;
 
 import jakarta.persistence.*;
+import kotobase_backend.comom.enums.SubscriptionStatus;
 import kotobase_backend.modules.user.entity.User;
 import lombok.*;
 
@@ -32,7 +33,8 @@ public class UserSubscription {
     @Column(name = "end_date", nullable = false)
     private LocalDateTime endDate;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     @Builder.Default
-    private String status = "ACTIVE";
+    private SubscriptionStatus status = SubscriptionStatus.ACTIVE;
 }

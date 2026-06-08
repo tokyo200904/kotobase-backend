@@ -1,6 +1,7 @@
 package kotobase_backend.modules.payment.entity;
 
 import jakarta.persistence.*;
+import kotobase_backend.comom.enums.TransactionStatus;
 import kotobase_backend.modules.user.entity.User;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -34,9 +35,10 @@ public class Transaction {
     @Column(name = "gateway_trans_id", length = 100)
     private String gatewayTransId;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     @Builder.Default
-    private String status = "PENDING";
+    private TransactionStatus status = TransactionStatus.PENDING;
 
     @Column(name = "created_at", updatable = false)
     @CreationTimestamp

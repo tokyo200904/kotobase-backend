@@ -6,11 +6,12 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class LessonMapper {
-    public LessonResponse  toLessonResponse(Lesson lesson) {
+    public LessonResponse  toLessonResponse(Lesson lesson, boolean isLocked) {
         LessonResponse lessonResponse = new LessonResponse();
         lessonResponse.setId(lesson.getId());
         lessonResponse.setLessonOrder(lesson.getLessonOrder());
         lessonResponse.setTitle(lesson.getTitle());
+        lessonResponse.setIsLocked(isLocked);
         return lessonResponse;
     }
 }

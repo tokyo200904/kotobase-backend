@@ -11,7 +11,7 @@ import java.util.List;
 
 @Component
 public class ExamQueryMapper {
-    public ExamResponse toExamResponse(Exam exam) {
+    public ExamResponse toExamResponse(Exam exam, boolean isLocked) {
         ExamResponse examResponse = new ExamResponse();
         examResponse.setId(exam.getId());
         examResponse.setTitle(exam.getTitle());
@@ -20,6 +20,7 @@ public class ExamQueryMapper {
         examResponse.setMaxScore(exam.getMaxScore());
         examResponse.setLevel(exam.getLevel().getLevel());
         examResponse.setTotalQuestions(exam.getTotalQuestions());
+        examResponse.setIsLocked(isLocked);
         return examResponse;
     }
 

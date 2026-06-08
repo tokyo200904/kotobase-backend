@@ -11,10 +11,11 @@ import java.util.List;
 
 @Component
 public class KanjiMapper {
-    public KanjisResponse toKanjiResponse(Kanji kanji) {
+    public KanjisResponse toKanjiResponse(Kanji kanji,boolean isLocked) {
         KanjisResponse kanjisResponse = new KanjisResponse();
         kanjisResponse.setId(kanji.getId());
         kanjisResponse.setCharacters(kanji.getCharacters());
+        kanjisResponse.setIsLocked(isLocked);
         return kanjisResponse;
     }
 
@@ -32,12 +33,13 @@ public class KanjiMapper {
     }
 
 
-    public KanjiFindResponse toFindResponse(Kanji kanji) {
+    public KanjiFindResponse toFindResponse(Kanji kanji,boolean isLocked) {
         KanjiFindResponse kanjiFindResponse = new KanjiFindResponse();
         kanjiFindResponse.setId(kanji.getId());
         kanjiFindResponse.setCharacters(kanji.getCharacters());
         kanjiFindResponse.setMeaning(kanji.getMeaning());
         kanjiFindResponse.setHan(kanji.getHan());
+        kanjiFindResponse.setIsLocked(isLocked);
         return kanjiFindResponse;
     }
 }

@@ -11,4 +11,5 @@ import lombok.NoArgsConstructor;
 public class KanjisResponse {
     private Integer id;
     private String characters;
+    private Boolean isLocked;
 }

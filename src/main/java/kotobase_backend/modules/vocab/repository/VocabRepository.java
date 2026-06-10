@@ -25,4 +25,16 @@ public interface VocabRepository extends JpaRepository<Vocab, Integer> {
             "WHERE v.level_id = :levelId AND v.id != :correctId " +
             "ORDER BY RAND() LIMIT 3", nativeQuery = true)
     List<Vocab> findRandomDistractors(@Param("levelId") Integer levelId, @Param("correctId") Integer correctId);
+
+    @Query(value = "SELECT v.* " +
+            "FROM vocabularies v " +
+            "JOIN vocabulary_topics vt " +
+            "ON vt.vocabulary_id = v.id " +
+            "WHERE vt.topic_id = :topicId " +
+            "AND v.id != :correctId " +
+            "ORDER BY RAND() " +
+            "LIMIT 3", nativeQuery = true)
+    List<Vocab> findRandom(@Param("topicId") Integer topicId, @Param("correctId") Integer correctId);
+
+    List<Vocab> findByVocabularyTopics_Topic_Id(Integer topicId);
 }

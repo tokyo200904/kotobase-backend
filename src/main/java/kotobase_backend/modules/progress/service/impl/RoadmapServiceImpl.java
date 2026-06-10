@@ -157,17 +157,6 @@ public class RoadmapServiceImpl implements RoadmapService {
         Station station = stationRepository.findById(stationId)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy trạm học tương ứng"));
 
-        System.out.println("\n=== DEBUG BẢO MẬT TRẠM HỌC ===");
-        System.out.println("1. Người dùng đang bấm vào Trạm ID: " + stationId);
-        System.out.println("2. Spring Boot nhận diện Level của Trạm này là: " + station.getLevel().getLevel());
-        System.out.println("3. ID của User đang gửi Request: " + userId);
-
-        if (userId != null) {
-            boolean isVip = premiumGuardService.check(userId);
-            System.out.println("4. Kết quả check VIP từ DB cho User này là: " + isVip);
-        }
-        System.out.println("================================\n");
-
         if (station.getLevel().getLevel() != Level.N5) {
             if (userId == null) {
                 throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Vui lòng đăng nhập để học nội dung này.");

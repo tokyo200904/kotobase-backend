@@ -35,9 +35,6 @@ public class Grammar {
     @Column(name = "note", nullable = false, columnDefinition = "TEXT")
     private String note;
 
-    @Column(name = "is_premium", nullable = false)
-    private Boolean isPremium;
-
     @ManyToOne
     @JoinColumn(name = "level_id")
     private JlptLevel level;

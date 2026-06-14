@@ -23,9 +23,6 @@ public class JlptLevel {
     @Column(name = "level", nullable = false)
     private Level level;
 
-    @Column(name = "is_premium", nullable = false)
-    private Boolean isPremium;
-
     @OneToMany(mappedBy = "level")
     private List<Lesson> lessons;
 }

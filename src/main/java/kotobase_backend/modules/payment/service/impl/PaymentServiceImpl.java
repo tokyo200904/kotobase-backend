@@ -21,6 +21,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
@@ -38,16 +39,17 @@ public class PaymentServiceImpl implements PaymentService {
     private final UserSubscriptionRepository userSubscriptionRepository;
     private final PaymentGatewayLogRepository logRepository;
 
-
     @Transactional
     public PaymentResponse createPaymentLink(Integer planId, User user, HttpServletRequest request) {
 
         SubscriptionPlan plan = planRepository.findById(planId)
                 .orElseThrow(() -> new RuntimeException("Gói cước không tồn tại"));
 
+        transactionRepository.cancelPendingTransactions(user.getId(), TransactionStatus.PENDING, TransactionStatus.FAILED);
+
         String orderId = "KOTO_" + System.currentTimeMillis();
-        long amountVND = plan.getPrice().longValue();
-        long amountVNPay = amountVND * 100L;
+        BigDecimal amountVNPayDecimal = plan.getPrice().multiply(new BigDecimal("100"));
+        String amountVNPayStr = String.valueOf(amountVNPayDecimal.longValueExact());
 
         Transaction transaction = Transaction.builder()
                 .id(orderId)
@@ -62,7 +64,7 @@ public class PaymentServiceImpl implements PaymentService {
         vnp_Params.put("vnp_Version", vnPayConfig.getVersion());
         vnp_Params.put("vnp_Command", vnPayConfig.getCommand());
         vnp_Params.put("vnp_TmnCode", vnPayConfig.getTmnCode());
-        vnp_Params.put("vnp_Amount", String.valueOf(amountVNPay));
+        vnp_Params.put("vnp_Amount", amountVNPayStr);
         vnp_Params.put("vnp_CurrCode", "VND");
         vnp_Params.put("vnp_TxnRef", orderId);
         vnp_Params.put("vnp_OrderInfo", "Thanh toan goi " + plan.getName());
@@ -144,7 +146,7 @@ public class PaymentServiceImpl implements PaymentService {
             String orderId = request.getParameter("vnp_TxnRef");
             String vnp_ResponseCode = request.getParameter("vnp_ResponseCode");
             String vnp_TransactionNo = request.getParameter("vnp_TransactionNo");
-            long vnpAmount = Long.parseLong(request.getParameter("vnp_Amount")) / 100;
+            BigDecimal vnpAmount = new BigDecimal(request.getParameter("vnp_Amount")).divide(new BigDecimal("100"));
 
             PaymentGatewayLog logEntry = PaymentGatewayLog.builder()
                     .gatewayTransId(vnp_TransactionNo)
@@ -152,7 +154,8 @@ public class PaymentServiceImpl implements PaymentService {
                     .rawPayload(request.getQueryString())
                     .build();
 
-            Transaction transaction = transactionRepository.findById(orderId).orElse(null);
+            Transaction transaction = transactionRepository.findByIdWithLock(orderId).orElse(null);
+
             if (transaction == null) {
                 return "{\"RspCode\":\"01\",\"Message\":\"Order not found\"}";
             }
@@ -165,7 +168,7 @@ public class PaymentServiceImpl implements PaymentService {
                 return "{\"RspCode\":\"02\",\"Message\":\"Order already confirmed\"}";
             }
 
-            if (transaction.getAmount().longValue() != vnpAmount) {
+            if (transaction.getAmount().compareTo(vnpAmount) != 0) {
                 return "{\"RspCode\":\"04\",\"Message\":\"Invalid amount\"}";
             }
 
@@ -174,7 +177,7 @@ public class PaymentServiceImpl implements PaymentService {
                 transaction.setGatewayTransId(vnp_TransactionNo);
 
                 grantPremiumAccess(transaction.getUser(), transaction.getPlan());
-                transactionRepository.cancelOtherPendingTransactions(transaction.getUser().getId(), transaction.getId());
+                transactionRepository.cancelOtherPendingTransactions(transaction.getUser().getId(), transaction.getId(), TransactionStatus.PENDING, TransactionStatus.FAILED);
 
                 log.info("!!! THÀNH CÔNG: Đã cấp Premium cho user_id = {} !!!", transaction.getUser().getId());
             } else {
@@ -212,15 +215,31 @@ public class PaymentServiceImpl implements PaymentService {
         UserSubscription currentSub = userSubscriptionRepository
                 .findFirstByUser_IdAndStatus(user.getId(), SubscriptionStatus.ACTIVE).orElse(null);
 
-        if (currentSub != null && currentSub.getEndDate().isAfter(LocalDateTime.now())) {
-            currentSub.setEndDate(currentSub.getEndDate().plusDays(plan.getDurationDays()));
-            userSubscriptionRepository.save(currentSub);
+        LocalDateTime now = LocalDateTime.now();
+
+        if (currentSub != null && currentSub.getEndDate().isAfter(now)) {
+            if (currentSub.getPlan().getId().equals(plan.getId())) {
+                currentSub.setEndDate(currentSub.getEndDate().plusDays(plan.getDurationDays()));
+                userSubscriptionRepository.save(currentSub);
+            } else {
+                currentSub.setStatus(SubscriptionStatus.CANCELLED);
+                userSubscriptionRepository.save(currentSub);
+
+                UserSubscription newSub = UserSubscription.builder()
+                        .user(user)
+                        .plan(plan)
+                        .startDate(now)
+                        .endDate(now.plusDays(plan.getDurationDays()))
+                        .status(SubscriptionStatus.ACTIVE)
+                        .build();
+                userSubscriptionRepository.save(newSub);
+            }
         } else {
             UserSubscription newSub = UserSubscription.builder()
                     .user(user)
                     .plan(plan)
-                    .startDate(LocalDateTime.now())
-                    .endDate(LocalDateTime.now().plusDays(plan.getDurationDays()))
+                    .startDate(now)
+                    .endDate(now.plusDays(plan.getDurationDays()))
                     .status(SubscriptionStatus.ACTIVE)
                     .build();
             userSubscriptionRepository.save(newSub);

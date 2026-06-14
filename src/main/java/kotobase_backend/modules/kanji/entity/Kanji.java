@@ -29,9 +29,6 @@ public class Kanji {
     @Column(name = "stroke_count",nullable = false)
     private Integer strokeCount;
 
-    @Column(name = "is_premium", nullable = false)
-    private Boolean isPremium;
-
     @Column(name = "han", nullable = false)
     private String han;
 
@@ -42,7 +39,7 @@ public class Kanji {
     @OneToMany(mappedBy = "kanji", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<KanjiReading> readings;
 
-    @OneToMany(mappedBy = "kanji", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "kanji", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ExampleKanji> exampleKanjis;
 }
 

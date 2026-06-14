@@ -10,5 +10,4 @@ import lombok.NoArgsConstructor;
 public class KanjiReadingResponse {
     private String reading;
     private String romaji;
-
 }

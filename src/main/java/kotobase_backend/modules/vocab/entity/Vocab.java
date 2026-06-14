@@ -33,9 +33,6 @@ public class Vocab {
     @Column(name = "reading")
     private String reading;
 
-    @Column(name = "is_premium")
-    private Boolean isPremium = false;
-
     @ManyToOne
     @JoinColumn(name = "level_id")
     private JlptLevel level;

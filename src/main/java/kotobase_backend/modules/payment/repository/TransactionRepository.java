@@ -3,6 +3,8 @@ package kotobase_backend.modules.payment.repository;
 import jakarta.persistence.LockModeType;
 import kotobase_backend.comom.enums.TransactionStatus;
 import kotobase_backend.modules.payment.entity.Transaction;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Modifying;
@@ -48,4 +50,12 @@ public interface TransactionRepository extends JpaRepository<Transaction, String
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("SELECT t FROM Transaction t WHERE t.id = :id")
     Optional<Transaction> findByIdWithLock(@Param("id") String id);
+
+    @Query("SELECT t FROM Transaction t WHERE " +
+            "(:search IS NULL OR t.id LIKE %:search% OR t.user.email LIKE %:search% OR t.user.fullName LIKE %:search%) " +
+            "AND (:status IS NULL OR t.status = :status) " +
+            "ORDER BY t.createdAt DESC")
+    Page<Transaction> adminSearchTransactions(@Param("search") String search,
+                                              @Param("status") TransactionStatus status,
+                                              Pageable pageable);
 }

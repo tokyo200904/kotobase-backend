@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import kotobase_backend.modules.JlptLevel.entity.JlptLevel;
 import kotobase_backend.modules.examples.entity.ExampleGrammar;
 import kotobase_backend.modules.lesson.entity.Lesson;
+import kotobase_backend.modules.practice.entity.GrammarExercise;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -46,4 +47,6 @@ public class Grammar {
     @OneToMany(mappedBy = "grammar", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ExampleGrammar>  exampleGrammars;
 
+    @OneToMany(mappedBy = "grammar", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<GrammarExercise> exercises;
 }

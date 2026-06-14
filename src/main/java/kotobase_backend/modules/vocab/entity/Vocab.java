@@ -4,7 +4,7 @@ import jakarta.persistence.*;
 import kotobase_backend.modules.JlptLevel.entity.JlptLevel;
 import kotobase_backend.modules.exam.entity.Audio;
 import kotobase_backend.modules.examples.entity.ExampleVocab;
-import kotobase_backend.modules.vocabularyTopic.entity.VocabularyTopic;
+import kotobase_backend.modules.topic.entity.Topic;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -41,10 +41,11 @@ public class Vocab {
     @JoinColumn(name = "audio_id")
     private Audio audio;
 
-    @OneToMany(mappedBy = "vocabulary", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<VocabularyTopic> vocabularyTopics;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "topic_id", nullable = false)
+    private Topic topic;
 
-    @OneToMany(mappedBy = "vocabulary", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "vocabulary", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ExampleVocab> exampleVocabs;
 
 }

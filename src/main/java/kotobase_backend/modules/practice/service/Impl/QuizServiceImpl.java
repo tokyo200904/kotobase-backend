@@ -23,7 +23,7 @@ public class QuizServiceImpl implements QuizService {
 
     @Override
     public List<PracticeQuestionResponse> generateVocabQuiz(Integer topicId) {
-        List<Vocab> targetVocabs = vocabRepository.findByVocabularyTopics_Topic_Id(topicId);
+        List<Vocab> targetVocabs = vocabRepository.findByTopic_Id(topicId);
         List<PracticeQuestionResponse> quizResponses = new ArrayList<>();
 
         for (Vocab correctVocab : targetVocabs) {

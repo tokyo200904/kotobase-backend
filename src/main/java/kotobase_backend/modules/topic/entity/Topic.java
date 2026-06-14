@@ -2,7 +2,7 @@ package kotobase_backend.modules.topic.entity;
 
 import jakarta.persistence.*;
 import kotobase_backend.modules.lesson.entity.Lesson;
-import kotobase_backend.modules.vocabularyTopic.entity.VocabularyTopic;
+import kotobase_backend.modules.vocab.entity.Vocab;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -28,6 +28,6 @@ public class Topic {
     @JoinColumn(name = "lesson_id")
     private Lesson lesson;
 
-    @OneToMany(mappedBy = "topic", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<VocabularyTopic> vocabularyTopics;
+    @OneToMany(mappedBy = "topic")
+    private List<Vocab> vocabularies;
 }

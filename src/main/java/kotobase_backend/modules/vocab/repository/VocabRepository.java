@@ -16,25 +16,34 @@ import java.util.List;
 public interface VocabRepository extends JpaRepository<Vocab, Integer> {
 
     @EntityGraph(attributePaths = "exampleVocabs")
-    @Query("select distinct v from Vocab v " +
-            "join v.vocabularyTopics vt " +
-            "where vt.topic.id = :topicId")
-    Page<Vocab> findByTopicId(@Param("topicId") Integer topicId, Pageable pageable);
+    Page<Vocab> findByTopic_Id(Integer topicId, Pageable pageable);
 
     @Query(value = "SELECT * FROM vocabularies v " +
             "WHERE v.level_id = :levelId AND v.id != :correctId " +
             "ORDER BY RAND() LIMIT 3", nativeQuery = true)
     List<Vocab> findRandomDistractors(@Param("levelId") Integer levelId, @Param("correctId") Integer correctId);
 
-    @Query(value = "SELECT v.* " +
-            "FROM vocabularies v " +
+    @Query(value = "SELECT * " +
+            "FROM vocabularies  " +
             "JOIN vocabulary_topics vt " +
-            "ON vt.vocabulary_id = v.id " +
-            "WHERE vt.topic_id = :topicId " +
-            "AND v.id != :correctId " +
+            "WHERE topic_id = :topicId " +
+            "AND id != :correctId " +
             "ORDER BY RAND() " +
             "LIMIT 3", nativeQuery = true)
     List<Vocab> findRandom(@Param("topicId") Integer topicId, @Param("correctId") Integer correctId);
 
-    List<Vocab> findByVocabularyTopics_Topic_Id(Integer topicId);
+    List<Vocab> findByTopic_Id(Integer topicId);
+
+
+    @Query("SELECT v FROM Vocab v WHERE " +
+            "(:search IS NULL OR v.word LIKE %:search% OR v.meaning LIKE %:search% OR v.reading LIKE %:search%) " +
+            "AND (:levelId IS NULL OR v.level.id = :levelId) " +
+            "AND (:topicId IS NULL OR v.topic.id = :topicId) " +
+            "ORDER BY v.id DESC")
+    Page<Vocab> adminSearchVocabs(@Param("search") String search,
+                                  @Param("levelId") Integer levelId,
+                                  @Param("topicId") Integer topicId,
+                                  Pageable pageable);
 }
+
+

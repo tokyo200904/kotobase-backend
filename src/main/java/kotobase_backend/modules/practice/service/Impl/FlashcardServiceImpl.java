@@ -36,7 +36,7 @@ public class FlashcardServiceImpl implements FlashcardService {
 
     @Override
     public List<FlashcardVocabResponse> getFlashcardVocab(Integer topicId) {
-        List<Vocab> vocab = vocabRepository.findByVocabularyTopics_Topic_Id(topicId);
+        List<Vocab> vocab = vocabRepository.findByTopic_Id(topicId);
 
         return vocab.stream()
                 .map(v -> {

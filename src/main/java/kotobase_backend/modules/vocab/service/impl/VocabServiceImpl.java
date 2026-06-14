@@ -55,7 +55,7 @@ public class VocabServiceImpl implements VocabService {
         int page = request.getPage() - 1 ;
         Pageable pageable = PageRequest.of(page, limit);
 
-        Page<Vocab> pageVocab = vocabRepository.findByTopicId(request.getTopicId(), pageable);
+        Page<Vocab> pageVocab = vocabRepository.findByTopic_Id(request.getTopicId(), pageable);
 
         List<VocabResponse> data = pageVocab.getContent().stream()
                 .map(vocabMapper::mapToVocab)

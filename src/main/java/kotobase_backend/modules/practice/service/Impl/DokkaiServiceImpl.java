@@ -33,7 +33,7 @@ public class DokkaiServiceImpl implements DokkaiService {
 
     @Override
     public List<PracticeQuestionResponse> generateVocabDokkai(Integer topicId) {
-        List<Vocab> targetVocabs = vocabularyRepository.findByVocabularyTopics_Topic_Id(topicId);
+        List<Vocab> targetVocabs = vocabularyRepository.findByTopic_Id(topicId);
         List<PracticeQuestionResponse> dokkaiResponses = new ArrayList<>();
 
         for (Vocab correctVocab : targetVocabs) {

@@ -7,4 +7,5 @@ import java.util.List;
 
 public interface QuestionGroupRepository extends JpaRepository<QuestionGroups, Long> {
     List<QuestionGroups> findBySection_Exam_Id(Long examId);
+    List<QuestionGroups> findBySection_IdOrderByDisplayOrderAsc(Long sectionId);
 }

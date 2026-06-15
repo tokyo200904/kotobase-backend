@@ -20,4 +20,11 @@ public interface ExamRepository extends JpaRepository<Exam, Long> {
             "left join fetch e.sections " +
             "where e.id = :id")
     Optional<Exam> findDetailById(@Param("id") Long id);
+
+    @Query("SELECT e FROM Exam e WHERE " +
+            "(:search IS NULL OR e.title LIKE %:search%) " +
+            "AND (:levelId IS NULL OR e.level.id = :levelId) " +
+            "ORDER BY e.id DESC")
+    Page<Exam> adminSearchExams(@Param("search") String search,
+                                @Param("levelId") Integer levelId, Pageable pageable);
 }

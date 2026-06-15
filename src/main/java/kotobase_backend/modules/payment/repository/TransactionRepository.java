@@ -13,6 +13,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -58,4 +59,5 @@ public interface TransactionRepository extends JpaRepository<Transaction, String
     Page<Transaction> adminSearchTransactions(@Param("search") String search,
                                               @Param("status") TransactionStatus status,
                                               Pageable pageable);
+    List<Transaction> findByUserIdOrderByCreatedAtDesc(Integer userId);
 }

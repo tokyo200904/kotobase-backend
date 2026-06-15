@@ -3,11 +3,14 @@ package kotobase_backend.modules.kanji;
 import kotobase_backend.comom.dto.response.PageResponse;
 import kotobase_backend.modules.kanji.dto.Request.KanjiAdminRequest;
 import kotobase_backend.modules.kanji.dto.Response.KanjiAdminResponse;
+import kotobase_backend.modules.kanji.dto.Response.KanjiCompactResponse;
 import kotobase_backend.modules.kanji.service.KanjiAdminService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @CrossOrigin(origins = "http://localhost:5173")
 @RestController
@@ -38,6 +41,11 @@ public class KanjiAdminController {
     @PutMapping("/{id}")
     public ResponseEntity<?> updateKanji(@PathVariable Integer id, @RequestBody KanjiAdminRequest request) {
         return ResponseEntity.ok(kanjiAdminService.updateKanji(id, request));
+    }
+
+    @GetMapping("/compact")
+    public ResponseEntity<List<KanjiCompactResponse>> getCompactKanjis(@RequestParam Integer levelId) {
+        return ResponseEntity.ok(kanjiAdminService.getCompactKanjisByLevel(levelId));
     }
 
     @DeleteMapping("/{id}")

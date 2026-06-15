@@ -4,6 +4,7 @@ import kotobase_backend.comom.dto.response.PageResponse;
 import kotobase_backend.comom.exceptions.CustomException.ResourceNotFoundException;
 import kotobase_backend.modules.vocab.dto.request.VocabAdminRequest;
 import kotobase_backend.modules.vocab.dto.response.VocabAdminResponse;
+import kotobase_backend.modules.vocab.dto.response.VocabCompactResponse;
 import kotobase_backend.modules.vocab.entity.Vocab;
 import kotobase_backend.modules.vocab.mapper.VocabAdminMapper;
 import kotobase_backend.modules.vocab.repository.VocabRepository;
@@ -13,6 +14,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -58,5 +61,15 @@ public class VocabAdminServiceImpl implements VocabAdminService {
         Vocab vocab = vocabRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy Từ vựng"));
         vocabRepository.delete(vocab);
+    }
+    @Override
+    public List<VocabCompactResponse> getCompactVocabsByLevel(Integer levelId) {
+        return vocabRepository.findByLevel_IdOrderByIdAsc(levelId).stream()
+                .map(v -> VocabCompactResponse.builder()
+                        .id(v.getId())
+                        .word(v.getWord())
+                        .meaning(v.getMeaning())
+                        .build())
+                .toList();
     }
 }

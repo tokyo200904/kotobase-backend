@@ -4,6 +4,7 @@ import kotobase_backend.comom.dto.response.PageResponse;
 import kotobase_backend.comom.exceptions.CustomException.ResourceNotFoundException;
 import kotobase_backend.modules.kanji.dto.Request.KanjiAdminRequest;
 import kotobase_backend.modules.kanji.dto.Response.KanjiAdminResponse;
+import kotobase_backend.modules.kanji.dto.Response.KanjiCompactResponse;
 import kotobase_backend.modules.kanji.entity.Kanji;
 import kotobase_backend.modules.kanji.mapper.KanjiAdminMapper;
 import kotobase_backend.modules.kanji.repository.KanjiRepository;
@@ -13,6 +14,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -54,6 +57,17 @@ public class KanjiAdminServiceImpl implements KanjiAdminService {
 
         Kanji updatedKanji = kanjiRepository.save(kanji);
         return kanjiMapper.toResponse(updatedKanji);
+    }
+
+    @Override
+    public List<KanjiCompactResponse> getCompactKanjisByLevel(Integer levelId) {
+        return kanjiRepository.findByLevel_IdOrderByIdAsc(levelId).stream()
+                .map(k -> KanjiCompactResponse.builder()
+                        .id(k.getId())
+                        .characters(k.getCharacters())
+                        .meaning(k.getMeaning())
+                        .build())
+                .toList();
     }
 
     @Override

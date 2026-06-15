@@ -3,11 +3,14 @@ package kotobase_backend.modules.vocab;
 import kotobase_backend.comom.dto.response.PageResponse;
 import kotobase_backend.modules.vocab.dto.request.VocabAdminRequest;
 import kotobase_backend.modules.vocab.dto.response.VocabAdminResponse;
+import kotobase_backend.modules.vocab.dto.response.VocabCompactResponse;
 import kotobase_backend.modules.vocab.service.VocabAdminService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @CrossOrigin(origins = "http://localhost:5173")
 @RestController
@@ -46,5 +49,10 @@ public class VocabAdminController {
     public ResponseEntity<String> deleteVocab(@PathVariable Integer id) {
         vocabAdminService.deleteVocab(id);
         return ResponseEntity.ok("Xóa từ vựng thành công!");
+    }
+
+    @GetMapping("/compact")
+    public ResponseEntity<List<VocabCompactResponse>> getCompactVocabs(@RequestParam Integer levelId) {
+        return ResponseEntity.ok(vocabAdminService.getCompactVocabsByLevel(levelId));
     }
 }

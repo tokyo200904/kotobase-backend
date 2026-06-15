@@ -44,6 +44,8 @@ public interface VocabRepository extends JpaRepository<Vocab, Integer> {
                                   @Param("levelId") Integer levelId,
                                   @Param("topicId") Integer topicId,
                                   Pageable pageable);
+
+    List<Vocab> findByLevel_IdOrderByIdAsc(Integer levelId);
 }
 
 

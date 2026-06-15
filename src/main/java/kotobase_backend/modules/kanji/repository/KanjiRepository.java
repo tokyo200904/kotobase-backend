@@ -41,4 +41,6 @@ public interface KanjiRepository extends JpaRepository<Kanji, Integer> {
     Page<Kanji> adminSearchKanjis(@Param("search") String search,
                                   @Param("levelId") Integer levelId,
                                   Pageable pageable);
+
+    List<Kanji> findByLevel_IdOrderByIdAsc(Integer levelId);
 }

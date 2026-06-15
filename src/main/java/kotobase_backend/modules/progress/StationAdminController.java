@@ -2,6 +2,7 @@ package kotobase_backend.modules.progress;
 
 import kotobase_backend.comom.dto.response.PageResponse;
 import kotobase_backend.comom.enums.ItemType;
+import kotobase_backend.modules.progress.dto.request.BulkReorderRequest;
 import kotobase_backend.modules.progress.dto.request.StationAdminRequest;
 import kotobase_backend.modules.progress.dto.response.StationAdminResponse;
 import kotobase_backend.modules.progress.service.StationAdminService;
@@ -45,5 +46,11 @@ public class StationAdminController {
     public ResponseEntity<String> deleteStation(@PathVariable Integer id) {
         stationAdminService.deleteStation(id);
         return ResponseEntity.ok("Xóa trạm học thành công!");
+    }
+
+    @PatchMapping("/reorder")
+    public ResponseEntity<String> reorderStations(@RequestBody BulkReorderRequest request) {
+        stationAdminService.updateBulkOrder(request);
+        return ResponseEntity.ok("Cập nhật thứ tự các trạm học thành công!");
     }
 }
